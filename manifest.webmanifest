@@ -1,0 +1,29 @@
+{
+  "name": "Bhargava Panchangam",
+  "short_name": "Bhargava",
+  "description": "Offline-ready Bhargava Panchangam with Bhargava Ghadiyalu, sunrise, tithi, and saved places.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#1a0800",
+  "theme_color": "#3d0000",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/maskable-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

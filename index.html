@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bhargava Panchangam">
+<meta name="theme-color" content="#3d0000">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
+<title>Bhargava Panchangam</title>
+<style>
+/* ── Reset & Base ─────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:16px;}
+body{
+  font-family:'Segoe UI',Tahoma,Arial,sans-serif;
+  background:#1a0800;
+  color:#fff;
+  min-height:100vh;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ── Header ────────────────────────────────────── */
+.app-header{
+  background:linear-gradient(135deg,#5c1100 0%,#a83200 50%,#d45a00 100%);
+  padding:18px 16px 14px;
+  text-align:center;
+  border-bottom:2px solid #FFD700;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+.om{font-size:2.2rem;color:#FFD700;line-height:1.2;display:block;text-shadow:0 0 20px rgba(255,215,0,0.5);}
+.app-header h1{font-size:1.35rem;color:#FFD700;font-weight:700;letter-spacing:0.5px;margin:4px 0 2px;}
+.app-header p{font-size:0.72rem;color:#FFCC88;letter-spacing:1px;text-transform:uppercase;}
+
+/* ── Layout ────────────────────────────────────── */
+.container{max-width:500px;margin:0 auto;padding:14px;}
+
+/* ── Card ──────────────────────────────────────── */
+.card{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,215,0,0.2);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:14px;
+  backdrop-filter:blur(4px);
+}
+.card-title{
+  color:#FFD700;
+  font-size:0.78rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:13px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  border-bottom:1px solid rgba(255,215,0,0.15);
+  padding-bottom:10px;
+}
+
+/* ── Form Elements ─────────────────────────────── */
+.form-row{margin-bottom:11px;}
+.form-row label{display:block;color:#FFCC88;font-size:0.78rem;margin-bottom:5px;font-weight:500;}
+.form-row input,.form-row select{
+  width:100%;
+  padding:11px 13px;
+  background:rgba(0,0,0,0.45);
+  border:1px solid rgba(255,215,0,0.3);
+  border-radius:9px;
+  color:#fff;
+  font-size:0.95rem;
+  outline:none;
+  -webkit-appearance:none;
+  transition:border-color 0.2s;
+}
+.form-row input:focus,.form-row select:focus{border-color:#FFD700;}
+.form-row select option{background:#1a0800;color:#fff;}
+.date-row{display:flex;gap:8px;align-items:flex-end;}
+.date-row .form-row{flex:1;margin-bottom:0;}
+.today-btn{
+  padding:11px 14px;
+  background:rgba(255,215,0,0.12);
+  border:1px solid rgba(255,215,0,0.35);
+  border-radius:9px;
+  color:#FFD700;
+  font-size:0.75rem;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
+/* ── Buttons ───────────────────────────────────── */
+.btn{
+  display:block;
+  width:100%;
+  padding:13px;
+  border:none;
+  border-radius:10px;
+  font-size:1rem;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform 0.1s,opacity 0.2s;
+  -webkit-appearance:none;
+}
+.btn:active{transform:scale(0.98);opacity:0.85;}
+.btn[disabled]{
+  opacity:0.45;
+  cursor:not-allowed;
+  transform:none;
+}
+.btn-primary{
+  background:linear-gradient(135deg,#c44a00,#FFD700);
+  color:#1a0800;
+  margin-bottom:9px;
+  box-shadow:0 4px 15px rgba(255,167,0,0.25);
+}
+.btn-gps{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,215,0,0.4);
+  color:#FFD700;
+  font-size:0.85rem;
+  padding:10px;
+}
+.btn-save-location{
+  background:rgba(124,252,0,0.08);
+  border:1px solid rgba(124,252,0,0.35);
+  color:#9DFF8A;
+  font-size:0.82rem;
+  padding:10px;
+  margin-top:8px;
+  display:none;
+}
+.btn-install{
+  background:rgba(255,204,136,0.08);
+  border:1px solid rgba(255,204,136,0.35);
+  color:#FFD78A;
+  font-size:0.82rem;
+  padding:10px;
+  margin-top:8px;
+  display:none;
+}
+
+/* ── Error ─────────────────────────────────────── */
+.error-msg{
+  background:rgba(220,0,0,0.15);
+  border:1px solid rgba(255,80,80,0.45);
+  color:#FF9999;
+  padding:10px 13px;
+  border-radius:8px;
+  font-size:0.82rem;
+  margin-top:10px;
+  display:none;
+}
+#gpsStatus{font-size:0.73rem;color:#FFCC88;text-align:center;margin-top:6px;min-height:16px;}
+#gpsCoords{
+  font-size:0.78rem;
+  color:#7CFC00;
+  background:rgba(0,255,0,0.07);
+  border:1px solid rgba(0,255,0,0.2);
+  border-radius:7px;
+  padding:7px 10px;
+  margin-top:8px;
+  display:none;
+}
+
+/* ── Panchang Info Grid ────────────────────────── */
+.info-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.info-cell{
+  background:rgba(0,0,0,0.3);
+  border-radius:9px;
+  padding:10px 9px;
+  text-align:center;
+  border:1px solid rgba(255,215,0,0.12);
+}
+.info-cell.span2{grid-column:1/-1;}
+.info-cell .lbl{
+  font-size:0.63rem;
+  color:#FFCC88;
+  text-transform:uppercase;
+  letter-spacing:0.6px;
+  margin-bottom:5px;
+}
+.info-cell .val{font-size:0.9rem;font-weight:600;color:#fff;line-height:1.3;}
+.info-cell .val.gold{color:#FFD700;}
+.info-cell .val.green{color:#7CFC00;}
+.info-cell .val.orange{color:#FFA500;}
+.info-cell .val.small{font-size:0.78rem;}
+
+/* ── Slot Table ────────────────────────────────── */
+.period-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#FFCC88;
+  font-size:0.73rem;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.8px;
+  margin:12px 0 8px;
+}
+.period-label::before,.period-label::after{content:'';flex:1;height:1px;background:rgba(255,215,0,0.2);}
+
+.slot-header{
+  display:grid;
+  grid-template-columns:108px 1fr;
+  gap:0;
+  padding:5px 8px;
+  background:rgba(255,215,0,0.1);
+  border-radius:6px;
+  margin-bottom:5px;
+  font-size:0.65rem;
+  color:#FFD700;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+.slot{
+  display:grid;
+  grid-template-columns:108px 1fr;
+  align-items:center;
+  padding:8px 8px;
+  border-radius:8px;
+  margin-bottom:3px;
+  border-left:3px solid transparent;
+  background:rgba(255,255,255,0.03);
+}
+.slot.now{
+  background:rgba(255,215,0,0.13);
+  border-left:3px solid #FFD700;
+  border-radius:0 8px 8px 0;
+  box-shadow:0 0 12px rgba(255,215,0,0.1);
+}
+.slot .time{font-size:0.72rem;color:#FFAA66;line-height:1.3;}
+.slot .result{font-size:0.88rem;font-weight:600;line-height:1.3;}
+.now-badge{
+  display:inline-block;
+  font-size:0.55rem;
+  background:#FFD700;
+  color:#1a0800;
+  padding:1px 5px;
+  border-radius:8px;
+  margin-left:5px;
+  font-weight:700;
+  vertical-align:middle;
+  letter-spacing:0.5px;
+}
+
+/* ── Result Colors ─────────────────────────────── */
+.good{color:#6EFF6E;}
+.bad{color:#FF7070;}
+.mixed{color:#FFD700;}
+.neutral{color:#B8D4E8;}
+
+/* ── Night Section ─────────────────────────────── */
+.night-slot .time{color:#9999CC;}
+
+/* ── Moon Phase ────────────────────────────────── */
+.moon-phase{font-size:1.4rem;vertical-align:middle;margin-right:4px;}
+
+/* ── Disclaimer ────────────────────────────────── */
+.disclaimer{
+  font-size:0.65rem;
+  color:rgba(255,255,255,0.3);
+  text-align:center;
+  line-height:1.5;
+  margin-bottom:16px;
+}
+
+/* ── Footer ────────────────────────────────────── */
+footer{
+  text-align:center;
+  padding:18px 16px 24px;
+  color:rgba(255,255,255,0.25);
+  font-size:0.65rem;
+  line-height:1.7;
+  border-top:1px solid rgba(255,215,0,0.1);
+}
+footer a{color:rgba(255,215,0,0.4);text-decoration:none;}
+
+/* ── Hidden ────────────────────────────────────── */
+#results{display:none;}
+
+/* ── Safe area for iPhone ──────────────────────── */
+@supports(padding:max(0px)){
+  .container{
+    padding-left:max(14px,env(safe-area-inset-left));
+    padding-right:max(14px,env(safe-area-inset-right));
+  }
+  footer{padding-bottom:max(24px,env(safe-area-inset-bottom));}
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <span class="om">ॐ</span>
+  <h1>Bhargava Panchangam</h1>
+  <p>Sukra Ghadiyalu &bull; Daily Predictions</p>
+</header>
+
+<div class="container">
+
+  <!-- INPUT CARD -->
+  <div class="card" id="inputCard">
+    <div class="card-title">📅 Enter Details</div>
+
+    <div class="date-row">
+      <div class="form-row">
+        <label for="dateInput">Date</label>
+        <input type="date" id="dateInput" autocomplete="off">
+      </div>
+      <button class="today-btn" onclick="setToday()">Today</button>
+    </div>
+
+    <div class="form-row" style="margin-top:11px;">
+      <label for="placeSelect">Select Place</label>
+      <select id="placeSelect">
+        <option value="">-- Select a Place --</option>
+      </select>
+    </div>
+
+    <div id="gpsCoords">📍 GPS captured — <span id="gpsCoordsText"></span></div>
+    <button class="btn btn-save-location" id="saveGpsBtn" onclick="saveCurrentGPSLocation()" disabled>➕ Add GPS To Saved Places</button>
+    <button class="btn btn-install" id="installBtn" onclick="installApp()">⬇ Install On Home Screen</button>
+
+    <button class="btn btn-primary" onclick="calculate()">🔮 Show Panchangam</button>
+    <button class="btn btn-gps" onclick="getGPS()">📡 Use My GPS Location</button>
+    <div id="gpsStatus"></div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <!-- Panchang Info -->
+    <div class="card">
+      <div class="card-title">📋 Panchang Details</div>
+      <div class="info-grid" id="panchaInfo"></div>
+    </div>
+
+    <!-- Bhargav Schedule -->
+    <div class="card">
+      <div class="card-title">🌅 Bhargava Ghadiyalu — Day</div>
+      <p style="font-size:0.72rem;color:#FFCC88;margin-bottom:10px;">
+        Predictions adjusted to local sunrise &bull; 1 Ghadiya = 24 min (adjusted)
+      </p>
+      <div class="slot-header"><span>Time</span><span>Bhargava Result</span></div>
+      <div id="daySlots"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🌙 Bhargava Ghadiyalu — Night</div>
+      <p style="font-size:0.72rem;color:#FFCC88;margin-bottom:10px;">
+        Same table applies from Sunset to next Sunrise
+      </p>
+      <div class="slot-header"><span>Time</span><span>Bhargava Result</span></div>
+      <div id="nightSlots"></div>
+    </div>
+
+    <p class="disclaimer">
+      Bhargava Siddantha Panchangam &bull; This system (Sukra Ghadiyalu / Venus Period) eliminates the<br>
+      need to check Tithi, Nakshatra, Varjam, Yama Gandam or Rahu Kalam separately.
+    </p>
+
+  </div>
+</div>
+
+<footer>
+  Bhargava Panchangam &bull; Vedic Astrology<br>
+  Sunrise/Sunset: NOAA Algorithm &bull; Tithi: Astronomical Calculation<br>
+  Based on <em>Bhargava Siddantha Panchangam</em> (Sukra Ghadiyalu)
+</footer>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════════════
+// BHARGAV TABLE — 30 slots × 7 days  [Sun=0 … Sat=6]
+// Reference baseline: Sunrise at 06:00 AM
+// Slot 0 = 06:00–06:24, Slot 1 = 06:25–06:48 … Slot 29 = 17:37–18:00
+// ══════════════════════════════════════════════════════════════
+const BHARGAV = [
+  // 0: 06:00–06:24
+  ["Profit","Dispute","Financial Gain","Bad News","Financial Gain","Success at Work","Troubles"],
+  // 1: 06:25–06:48
+  ["Financial Gain","Profit","Comforts","Depression","Fights","Mixed Results","Comforts"],
+  // 2: 06:49–07:12
+  ["Fights","Safe","Fear","Financial Gain","Fear","Financial Gain","Enemity"],
+  // 3: 07:13–07:36
+  ["Ill Health","Financial Gain","Troubles","Success at Work","Happiness","Happiness","Financial Gain"],
+  // 4: 07:37–08:00
+  ["Fear of Theft","Land Gain","Victory","Fear","Success at Work","Enemity","Success"],
+  // 5: 08:01–08:24
+  ["Growth of Enemies","Financial Loss","Comforts","Comforts","Success at Work","Victory","Success at Work"],
+  // 6: 08:25–08:48
+  ["Success at Work","Success at Work","Comforts","Comforts","Financial Gain","Threat","Success at Work"],
+  // 7: 08:49–09:12
+  ["Comforts","Gains","Fear","Fear","Gains","Friendship","Felicitation"],
+  // 8: 09:13–09:36
+  ["Safe","Fulfillment of Desire","Enemity","Financial Gains","Dispute","Bad Omen","Failure at Work"],
+  // 9: 09:37–10:00
+  ["Friendship","Comforts","Mental Depression","Mixed Results","Success at Work","Mixed Results","Ill Health"],
+  // 10: 10:01–10:24
+  ["Failure at Work","Good Relation with Opposite Sex","Comforts","Success at Work","Growth","Comforts","Comforts"],
+  // 11: 10:25–10:48
+  ["Comforts","Achievements","Failure at Work","Mixed Results","Satisfaction","Financial Gain","Sorrow"],
+  // 12: 10:49–11:12
+  ["Victory","Failure at Work","Mixed Results","Satisfaction","Financial Gains","Safe","Fear"],
+  // 13: 11:13–11:36
+  ["Achievement","Dispute","Fear","Gains","Good Health","Success at Work","Friendship Gain"],
+  // 14: 11:37–12:00
+  ["Dispute","Success at Work","Hardship","Satisfaction","Loss at Work","Accidents","Victory"],
+  // 15: 12:01–12:24
+  ["Fulfillment","Profits","Disease","Comforts","Failure at Work","Comforts","Financial Gain"],
+  // 16: 12:25–12:48
+  ["Failures","Financial Gain","Profits","Achievement","Enemity","Fear","Satisfaction"],
+  // 17: 12:49–13:12
+  ["Victory","Victory at Work","Achievement","Safety","Achievement","Satisfaction","Mixed Results"],
+  // 18: 13:13–13:36
+  ["Fulfillment","Good","Failure","Mixed Results","Blockage","Loss of Comforts","Success"],
+  // 19: 13:37–14:00
+  ["Sorrow","Mixed Results","Gain in Job","Dispute","Loss at Work","Expenditure","Victory"],
+  // 20: 14:01–14:24
+  ["Expenditure","Good","Wastage","Fulfillment","Dispute","Victory","Success"],
+  // 21: 14:25–14:48
+  ["Dispute","Agony","Failure at Work","Profits","Success","Comforts","Mixed Results"],
+  // 22: 14:49–15:12
+  ["Financial Gain","Success at Work","Defeat","Gain in Job","Obstacles","Fear","Enemity"],
+  // 23: 15:13–15:36
+  ["Growth of Enemies","Journey","Victory over Enemies","Victory","Bad Omen","Failure at Work","Disease"],
+  // 24: 15:37–16:00
+  ["Dispute","Financial Gain","Expenditure","Fulfillment","Friendship","Loss","Agony"],
+  // 25: 16:01–16:24
+  ["Disease","Knowledge","Comforts","Success","Extraordinary Success","Rumours","Gains"],
+  // 26: 16:25–16:48
+  ["Financial Gain","Failure at Work","Success at Work","Safe","Dispute","Fear","Achievement"],
+  // 27: 16:49–17:12
+  ["Achievement","Respect","Safe","Victory","Fear","Loss at Work","Profit"],
+  // 28: 17:13–17:36
+  ["Loss","Good","Achievement","Gain in Job","Victory","Success at Work","Comforts"],
+  // 29: 17:37–18:00
+  ["Land Gain","Power Gain","Comforts","Bad Omen","Success at Work","Financial Gain","Victory"]
+];
+
+// Result → color category
+const GOOD_SET = new Set([
+  "Profit","Financial Gain","Financial Gains","Success","Victory","Happiness","Comforts",
+  "Achievement","Fulfillment","Satisfaction","Safe","Land Gain","Gains","Felicitation",
+  "Friendship","Friendship Gain","Knowledge","Good Health","Extraordinary Success",
+  "Victory at Work","Victory over Enemies","Profits","Good","Power Gain","Respect",
+  "Growth","Achievements","Fulfillment of Desire","Success at Work",
+  "Good Relation with Opposite Sex","Gain in Job","Journey"
+]);
+const BAD_SET = new Set([
+  "Dispute","Bad News","Fights","Fear","Ill Health","Troubles","Depression",
+  "Mental Depression","Failure","Failure at Work","Failures","Disease","Hardship",
+  "Defeat","Sorrow","Agony","Bad Omen","Loss","Loss at Work","Obstacles","Blockage",
+  "Enemity","Expenditure","Rumours","Accidents","Threat","Growth of Enemies",
+  "Financial Loss","Wastage","Loss of Comforts","Fear of Theft","Obstacles","Bad Omen"
+]);
+function getCategory(r){
+  if(GOOD_SET.has(r)) return "good";
+  if(BAD_SET.has(r)) return "bad";
+  if(r==="Mixed Results"||r==="Safety") return "mixed";
+  return "neutral";
+}
+
+// ══════════════════════════════════════════════════════════════
+// CITIES DATABASE  (name, lat, lon, tz=UTC offset hours)
+// ══════════════════════════════════════════════════════════════
+const CITIES = [
+  // ── Andhra Pradesh ──────────────────────────────────────
+  {n:"Hyderabad, Telangana",       lat:17.3850, lon:78.4867, tz:5.5},
+  {n:"Visakhapatnam (Vizag), AP",  lat:17.6868, lon:83.2185, tz:5.5},
+  {n:"Vijayawada, AP",             lat:16.5062, lon:80.6480, tz:5.5},
+  {n:"Tirupati, AP",               lat:13.6288, lon:79.4192, tz:5.5},
+  {n:"Rajahmundry, AP",            lat:17.0005, lon:81.8040, tz:5.5},
+  {n:"Guntur, AP",                 lat:16.3067, lon:80.4365, tz:5.5},
+  {n:"Nellore, AP",                lat:14.4426, lon:79.9865, tz:5.5},
+  {n:"Kurnool, AP",                lat:15.8281, lon:78.0373, tz:5.5},
+  {n:"Kadapa (Cuddapah), AP",      lat:14.4673, lon:78.8242, tz:5.5},
+  {n:"Warangal, Telangana",        lat:17.9784, lon:79.5941, tz:5.5},
+  {n:"Karimnagar, Telangana",      lat:18.4386, lon:79.1288, tz:5.5},
+  // ── South India ─────────────────────────────────────────
+  {n:"Bengaluru (Bangalore), KA",  lat:12.9716, lon:77.5946, tz:5.5},
+  {n:"Mysuru (Mysore), KA",        lat:12.2958, lon:76.6394, tz:5.5},
+  {n:"Mangaluru (Mangalore), KA",  lat:12.8698, lon:74.8426, tz:5.5},
+  {n:"Hubballi-Dharwad, KA",       lat:15.3647, lon:75.1240, tz:5.5},
+  {n:"Chennai, Tamil Nadu",        lat:13.0827, lon:80.2707, tz:5.5},
+  {n:"Coimbatore, Tamil Nadu",     lat:11.0168, lon:76.9558, tz:5.5},
+  {n:"Madurai, Tamil Nadu",        lat: 9.9252, lon:78.1198, tz:5.5},
+  {n:"Trichy (Tiruchirappalli), TN",lat:10.7905,lon:78.7047, tz:5.5},
+  {n:"Salem, Tamil Nadu",          lat:11.6643, lon:78.1460, tz:5.5},
+  {n:"Tirunelveli, TN",            lat: 8.7139, lon:77.7567, tz:5.5},
+  {n:"Kochi, Kerala",              lat: 9.9312, lon:76.2673, tz:5.5},
+  {n:"Thiruvananthapuram, Kerala", lat: 8.5241, lon:76.9366, tz:5.5},
+  {n:"Kozhikode (Calicut), Kerala",lat:11.2588, lon:75.7804, tz:5.5},
+  // ── West India ──────────────────────────────────────────
+  {n:"Mumbai, Maharashtra",        lat:19.0760, lon:72.8777, tz:5.5},
+  {n:"Pune, Maharashtra",          lat:18.5204, lon:73.8567, tz:5.5},
+  {n:"Nashik, Maharashtra",        lat:19.9975, lon:73.7898, tz:5.5},
+  {n:"Nagpur, Maharashtra",        lat:21.1458, lon:79.0882, tz:5.5},
+  {n:"Aurangabad, Maharashtra",    lat:19.8762, lon:75.3433, tz:5.5},
+  {n:"Ahmedabad, Gujarat",         lat:23.0225, lon:72.5714, tz:5.5},
+  {n:"Surat, Gujarat",             lat:21.1702, lon:72.8311, tz:5.5},
+  {n:"Vadodara (Baroda), Gujarat", lat:22.3072, lon:73.1812, tz:5.5},
+  {n:"Rajkot, Gujarat",            lat:22.3039, lon:70.8022, tz:5.5},
+  // ── North India ─────────────────────────────────────────
+  {n:"New Delhi",                  lat:28.6139, lon:77.2090, tz:5.5},
+  {n:"Noida, Uttar Pradesh",       lat:28.5355, lon:77.3910, tz:5.5},
+  {n:"Gurugram, Haryana",          lat:28.4595, lon:77.0266, tz:5.5},
+  {n:"Jaipur, Rajasthan",          lat:26.9124, lon:75.7873, tz:5.5},
+  {n:"Jodhpur, Rajasthan",         lat:26.2389, lon:73.0243, tz:5.5},
+  {n:"Udaipur, Rajasthan",         lat:24.5854, lon:73.7125, tz:5.5},
+  {n:"Lucknow, Uttar Pradesh",     lat:26.8467, lon:80.9462, tz:5.5},
+  {n:"Varanasi, Uttar Pradesh",    lat:25.3176, lon:82.9739, tz:5.5},
+  {n:"Agra, Uttar Pradesh",        lat:27.1767, lon:78.0081, tz:5.5},
+  {n:"Kanpur, Uttar Pradesh",      lat:26.4499, lon:80.3319, tz:5.5},
+  {n:"Prayagraj (Allahabad), UP",  lat:25.4358, lon:81.8463, tz:5.5},
+  {n:"Bhopal, Madhya Pradesh",     lat:23.2599, lon:77.4126, tz:5.5},
+  {n:"Indore, Madhya Pradesh",     lat:22.7196, lon:75.8577, tz:5.5},
+  {n:"Gwalior, Madhya Pradesh",    lat:26.2183, lon:78.1828, tz:5.5},
+  {n:"Chandigarh, Punjab",         lat:30.7333, lon:76.7794, tz:5.5},
+  {n:"Amritsar, Punjab",           lat:31.6340, lon:74.8723, tz:5.5},
+  {n:"Ludhiana, Punjab",           lat:30.9010, lon:75.8573, tz:5.5},
+  {n:"Dehradun, Uttarakhand",      lat:30.3165, lon:78.0322, tz:5.5},
+  {n:"Haridwar, Uttarakhand",      lat:29.9457, lon:78.1642, tz:5.5},
+  {n:"Shimla, Himachal Pradesh",   lat:31.1048, lon:77.1734, tz:5.5},
+  // ── East India ──────────────────────────────────────────
+  {n:"Kolkata, West Bengal",       lat:22.5726, lon:88.3639, tz:5.5},
+  {n:"Patna, Bihar",               lat:25.5941, lon:85.1376, tz:5.5},
+  {n:"Ranchi, Jharkhand",          lat:23.3441, lon:85.3096, tz:5.5},
+  {n:"Bhubaneswar, Odisha",        lat:20.2961, lon:85.8245, tz:5.5},
+  {n:"Guwahati, Assam",            lat:26.1445, lon:91.7362, tz:5.5},
+  // ── International ───────────────────────────────────────
+  {n:"Dubai, UAE",                 lat:25.2048, lon:55.2708, tz:4.0},
+  {n:"Abu Dhabi, UAE",             lat:24.4539, lon:54.3773, tz:4.0},
+  {n:"Muscat, Oman",               lat:23.5859, lon:58.4059, tz:4.0},
+  {n:"Riyadh, Saudi Arabia",       lat:24.7136, lon:46.6753, tz:3.0},
+  {n:"Jeddah, Saudi Arabia",       lat:21.4858, lon:39.1925, tz:3.0},
+  {n:"Bahrain",                    lat:26.0667, lon:50.5577, tz:3.0},
+  {n:"Kuwait City, Kuwait",        lat:29.3759, lon:47.9774, tz:3.0},
+  {n:"Doha, Qatar",                lat:25.2854, lon:51.5310, tz:3.0},
+  {n:"Singapore",                  lat: 1.3521, lon:103.8198,tz:8.0},
+  {n:"Kuala Lumpur, Malaysia",     lat: 3.1390, lon:101.6869,tz:8.0},
+  {n:"London, UK",                 lat:51.5074, lon: -0.1278, tz:0.0},
+  {n:"New York, USA",              lat:40.7128, lon:-74.0060, tz:-5.0},
+  {n:"New Jersey, USA",            lat:40.0583, lon:-74.4057, tz:-5.0},
+  {n:"Chicago, USA",               lat:41.8781, lon:-87.6298, tz:-6.0},
+  {n:"Toronto, Canada",            lat:43.6532, lon:-79.3832, tz:-5.0},
+  {n:"Sydney, Australia",          lat:-33.8688,lon:151.2093, tz:10.0},
+  {n:"Melbourne, Australia",       lat:-37.8136,lon:144.9631, tz:10.0},
+];
+
+// GPS state
+let gpsLat=null, gpsLon=null;
+const SAVED_LOCATIONS_KEY='bhargava_saved_locations_v1';
+let savedLocations=[];
+let installPromptEvent=null;
+
+// ══════════════════════════════════════════════════════════════
+// UTILITY
+// ══════════════════════════════════════════════════════════════
+function toRad(d){return d*Math.PI/180;}
+function toDeg(r){return r*180/Math.PI;}
+function norm360(a){return((a%360)+360)%360;}
+function estimateTimezone(lat,lon){
+  let tz=Math.round(lon/15*2)/2;
+  if(lon>=68&&lon<=97&&lat>=8&&lat<=37) tz=5.5;
+  return tz;
+}
+function formatCoordinate(value,posLabel,negLabel){
+  const dir=value>=0?posLabel:negLabel;
+  return `${Math.abs(value).toFixed(2)}°${dir}`;
+}
+function getSavedLocations(){
+  try{
+    const raw=localStorage.getItem(SAVED_LOCATIONS_KEY);
+    const parsed=raw?JSON.parse(raw):[];
+    return Array.isArray(parsed)?parsed:[];
+  }catch(_err){
+    return [];
+  }
+}
+function persistSavedLocations(){
+  localStorage.setItem(SAVED_LOCATIONS_KEY,JSON.stringify(savedLocations));
+}
+function registerServiceWorker(){
+  if(!('serviceWorker' in navigator)) return;
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+function setupInstallPrompt(){
+  const installBtn=document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt',(event)=>{
+    event.preventDefault();
+    installPromptEvent=event;
+    installBtn.style.display='block';
+  });
+  window.addEventListener('appinstalled',()=>{
+    installPromptEvent=null;
+    installBtn.style.display='none';
+  });
+}
+async function installApp(){
+  const installBtn=document.getElementById('installBtn');
+  if(!installPromptEvent){
+    const st=document.getElementById('gpsStatus');
+    st.textContent='ℹ On iPhone use Share > Add to Home Screen. On Android, open this app in Chrome over HTTPS and use Install/Add to Home screen.';
+    st.style.color='#FFCC88';
+    return;
+  }
+  installPromptEvent.prompt();
+  const choice=await installPromptEvent.userChoice;
+  if(choice&&choice.outcome!=='accepted') installBtn.style.display='block';
+  else installBtn.style.display='none';
+  installPromptEvent=null;
+}
+
+// Hours → "HH:MM"
+function hToTime(h){
+  const hh=Math.floor(h);
+  const mm=Math.round((h-hh)*60);
+  const H=(hh%24+24)%24;
+  return String(H).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+}
+
+// Julian Day Number
+function julianDay(Y,M,D){
+  if(M<=2){Y--;M+=12;}
+  const A=Math.floor(Y/100);
+  const B=2-A+Math.floor(A/4);
+  return Math.floor(365.25*(Y+4716))+Math.floor(30.6001*(M+1))+D+B-1524.5;
+}
+function localTimeToJD(Y,M,D,localHour,tz){
+  return julianDay(Y,M,D)+(localHour-tz)/24;
+}
+function jdToLocalHour(jd,Y,M,D,tz){
+  return (jd-julianDay(Y,M,D))*24+tz;
+}
+function formatRange(startH,endH){
+  return `${hToTime(startH)} - ${hToTime(endH)}`;
+}
+function formatEventTime(jd,Y,M,D,tz){
+  return hToTime(jdToLocalHour(jd,Y,M,D,tz));
+}
+function formatDurationHours(hours){
+  return `${Math.floor(hours)}h ${Math.round((hours%1)*60)}m`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SUNRISE / SUNSET  (NOAA Solar Calculator)
+// Returns { sunrise, sunset } in decimal hours (local time)
+// ══════════════════════════════════════════════════════════════
+function calcSunriseSunset(Y,M,D,lat,lon,tz){
+  const JD=julianDay(Y,M,D);
+  const T=(JD-2451545.0)/36525;
+
+  // Geometric mean longitude of sun
+  let L0=norm360(280.46646+T*(36000.76983+T*0.0003032));
+  // Mean anomaly
+  let MA=norm360(357.52911+T*(35999.05029-0.0001537*T));
+  const MAr=toRad(MA);
+  // Eccentricity
+  const e=0.016708634-T*(0.000042037+0.0000001267*T);
+  // Sun's equation of center
+  const C=(1.914602-T*(0.004817+0.000014*T))*Math.sin(MAr)
+           +(0.019993-0.000101*T)*Math.sin(2*MAr)
+           +0.000289*Math.sin(3*MAr);
+  // Sun's true longitude → apparent longitude
+  const omega=125.04-1934.136*T;
+  const lambda=L0+C-0.00569-0.00478*Math.sin(toRad(omega));
+  // Mean obliquity corrected
+  const eps0=23.0+(26.0+(21.448-T*(46.8150+T*(0.00059-T*0.001813)))/60)/60;
+  const eps=eps0+0.00256*Math.cos(toRad(omega));
+  // Declination
+  const sinDec=Math.sin(toRad(eps))*Math.sin(toRad(lambda));
+  const dec=toDeg(Math.asin(sinDec));
+  // Equation of time (minutes)
+  const y=Math.tan(toRad(eps/2))**2;
+  const sin2L0=Math.sin(2*toRad(L0)), cos2L0=Math.cos(2*toRad(L0));
+  const sinMA=Math.sin(MAr), sin4L0=Math.sin(4*toRad(L0)), sin2MA=Math.sin(2*MAr);
+  const EqT=toDeg(y*sin2L0-2*e*sinMA+4*e*y*sinMA*cos2L0-0.5*y*y*sin4L0-1.25*e*e*sin2MA)*4;
+  // Hour angle for sunrise (zenith = 90.833°)
+  const cosHA=Math.cos(toRad(90.833))/(Math.cos(toRad(lat))*Math.cos(toRad(dec)))
+              -Math.tan(toRad(lat))*Math.tan(toRad(dec));
+  if(cosHA<-1||cosHA>1) return null; // polar
+  const HA=toDeg(Math.acos(cosHA));
+  // Solar noon in local hours
+  const solarNoon=(720-4*lon-EqT+tz*60)/60;
+  return{sunrise:solarNoon-HA*4/60, sunset:solarNoon+HA*4/60};
+}
+
+// ══════════════════════════════════════════════════════════════
+// SUN LONGITUDE (for Hindu month / Rasi)
+// ══════════════════════════════════════════════════════════════
+function sunLongitude(jd){
+  const T=(jd-2451545.0)/36525;
+  const L0=norm360(280.46646+T*(36000.76983+T*0.0003032));
+  const MA=norm360(357.52911+T*(35999.05029-0.0001537*T));
+  const MAr=toRad(MA);
+  const C=(1.914602-T*(0.004817+0.000014*T))*Math.sin(MAr)
+          +(0.019993-0.000101*T)*Math.sin(2*MAr)
+          +0.000289*Math.sin(3*MAr);
+  return norm360(L0+C);
+}
+
+// MOON LONGITUDE (simplified Meeus)
+function moonLongitude(jd){
+  const T=(jd-2451545.0)/36525;
+  const Lp=norm360(218.3165+481267.8813*T);
+  const D =norm360(297.8502+445267.1115*T);
+  const M =norm360(357.5291+ 35999.0503*T);
+  const Mp=norm360(134.9634+477198.8676*T);
+  const F =norm360( 93.2721+483202.0175*T);
+  return norm360(
+    Lp
+    +6.2888*Math.sin(toRad(Mp))
+    -1.2740*Math.sin(toRad(2*D-Mp))
+    +0.6583*Math.sin(toRad(2*D))
+    +0.2136*Math.sin(toRad(2*Mp))
+    -0.1851*Math.sin(toRad(M))
+    -0.1143*Math.sin(toRad(2*F))
+    +0.0588*Math.sin(toRad(2*D-2*Mp))
+    +0.0572*Math.sin(toRad(2*D-M-Mp))
+    +0.0533*Math.sin(toRad(2*D+Mp))
+  );
+}
+
+// Lahiri Ayanamsa (approx)
+function ayanamsa(jd){
+  const T=(jd-2451545.0)/36525;
+  return 23.85+0.013597*T;
+}
+function siderealSunLongitude(jd){
+  return norm360(sunLongitude(jd)-ayanamsa(jd));
+}
+function siderealMoonLongitude(jd){
+  return norm360(moonLongitude(jd)-ayanamsa(jd));
+}
+
+// ══════════════════════════════════════════════════════════════
+// TITHI (0–29)
+// 0=Shukla Pratipada … 14=Purnima … 29=Amavasya
+// ══════════════════════════════════════════════════════════════
+function getTithi(jd){
+  const diff=norm360(moonLongitude(jd)-sunLongitude(jd));
+  return Math.floor(diff/12); // 0–29
+}
+
+const TITHI_ENG=[
+  "Shukla Pratipada","Shukla Dwitiya","Shukla Tritiya","Shukla Chaturthi","Shukla Panchami",
+  "Shukla Shashthi","Shukla Saptami","Shukla Ashtami","Shukla Navami","Shukla Dashami",
+  "Shukla Ekadashi","Shukla Dwadashi","Shukla Trayodashi","Shukla Chaturdashi","Purnima",
+  "Krishna Pratipada","Krishna Dwitiya","Krishna Tritiya","Krishna Chaturthi","Krishna Panchami",
+  "Krishna Shashthi","Krishna Saptami","Krishna Ashtami","Krishna Navami","Krishna Dashami",
+  "Krishna Ekadashi","Krishna Dwadashi","Krishna Trayodashi","Krishna Chaturdashi","Amavasya"
+];
+const TITHI_TEL=[
+  "పాడ్యమి","విదియ","తదియ","చవితి","పంచమి","షష్ఠి","సప్తమి","అష్టమి","నవమి","దశమి",
+  "ఏకాదశి","ద్వాదశి","త్రయోదశి","చతుర్దశి","పౌర్ణమి",
+  "పాడ్యమి","విదియ","తదియ","చవితి","పంచమి","షష్ఠి","సప్తమి","అష్టమి","నవమి","దశమి",
+  "ఏకాదశి","ద్వాదశి","త్రయోదశి","చతుర్దశి","అమావాస్య"
+];
+const NAKSHATRA_ENG=[
+  "Ashwini","Bharani","Krittika","Rohini","Mrigashira","Ardra","Punarvasu","Pushya","Ashlesha",
+  "Magha","Purva Phalguni","Uttara Phalguni","Hasta","Chitra","Swati","Vishakha","Anuradha",
+  "Jyeshtha","Mula","Purva Ashadha","Uttara Ashadha","Shravana","Dhanishta","Shatabhisha",
+  "Purva Bhadrapada","Uttara Bhadrapada","Revati"
+];
+const YOGA_ENG=[
+  "Vishkambha","Preeti","Ayushman","Saubhagya","Shobhana","Atiganda","Sukarma","Dhriti","Shoola",
+  "Ganda","Vriddhi","Dhruva","Vyaghata","Harshana","Vajra","Siddhi","Vyatipata","Variyana",
+  "Parigha","Shiva","Siddha","Sadhya","Shubha","Shukla","Brahma","Indra","Vaidhriti"
+];
+const KARANA_ENG=[
+  "Kimstughna","Bava","Balava","Kaulava","Taitila","Garaja","Vanija","Vishti","Shakuni",
+  "Chatushpada","Naga"
+];
+const HORA_SEQUENCE=["Saturn","Jupiter","Mars","Sun","Venus","Mercury","Moon"];
+const WEEKDAY_LORDS=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"];
+const RAHU_SEGMENT=[8,2,7,5,6,4,3];
+const YAMAGANDA_SEGMENT=[5,4,3,2,1,7,6];
+const DURMUHURTA_MUHURTAS=[
+  [4],
+  [2,8],
+  [7,10],
+  [5],
+  [6,12],
+  [4,9],
+  [1,2]
+];
+const VARJYAM_MESSAGE="Local varjyam table pending verification";
+
+function getNakshatraIndex(jd){
+  return Math.floor(siderealMoonLongitude(jd)/(360/27));
+}
+function getYogaIndex(jd){
+  return Math.floor(norm360(siderealSunLongitude(jd)+siderealMoonLongitude(jd))/(360/27));
+}
+function getKaranaIndex(jd){
+  const halfIndex=Math.floor(norm360(moonLongitude(jd)-sunLongitude(jd))/6);
+  if(halfIndex===0) return 0;
+  if(halfIndex>=57) return halfIndex-48;
+  return 1+((halfIndex-1)%7);
+}
+function findNextChange(jdStart,getter,maxHours=36){
+  const current=getter(jdStart);
+  const step=1/144;
+  let probe=jdStart+step;
+  const limit=jdStart+maxHours/24;
+  while(probe<=limit&&getter(probe)===current) probe+=step;
+  if(probe>limit) return null;
+  let lo=probe-step, hi=probe;
+  for(let i=0;i<24;i++){
+    const mid=(lo+hi)/2;
+    if(getter(mid)===current) lo=mid;
+    else hi=mid;
+  }
+  return hi;
+}
+function getDaySegmentRange(sunrise,sunset,segmentNumber){
+  const segLen=(sunset-sunrise)/8;
+  const start=sunrise+(segmentNumber-1)*segLen;
+  return {start,end:start+segLen};
+}
+function getDurmuhurtaRanges(sunrise,sunset,dow){
+  const muhurtaLen=(sunset-sunrise)/15;
+  return DURMUHURTA_MUHURTAS[dow].map(index=>{
+    const start=sunrise+(index-1)*muhurtaLen;
+    return {start,end:start+muhurtaLen};
+  });
+}
+function getHoraInfo(referenceHour,sunrise,sunset,nextSunrise,dow,isToday){
+  const dayLord=WEEKDAY_LORDS[dow];
+  const baseIndex=HORA_SEQUENCE.indexOf(dayLord);
+  let horaIndex=0, start=sunrise, end=sunset, phaseLabel='at sunrise';
+  if(isToday&&referenceHour>=sunrise&&referenceHour<nextSunrise){
+    if(referenceHour<sunset){
+      const dayHoraLen=(sunset-sunrise)/12;
+      horaIndex=Math.min(11,Math.floor((referenceHour-sunrise)/dayHoraLen));
+      start=sunrise+horaIndex*dayHoraLen;
+      end=start+dayHoraLen;
+      phaseLabel='current';
+    }else{
+      const nightHoraLen=(nextSunrise-sunset)/12;
+      const nightIndex=Math.min(11,Math.floor((referenceHour-sunset)/nightHoraLen));
+      horaIndex=12+nightIndex;
+      start=sunset+nightIndex*nightHoraLen;
+      end=start+nightHoraLen;
+      phaseLabel='current';
+    }
+  }else{
+    end=sunrise+(sunset-sunrise)/12;
+  }
+  const ruler=HORA_SEQUENCE[(baseIndex+horaIndex)%7];
+  return {ruler,start,end,phaseLabel};
+}
+
+// Moon phase emoji
+function moonEmoji(t){
+  if(t===14) return "🌕";
+  if(t===29) return "🌑";
+  if(t<8)    return "🌒";
+  if(t<14)   return "🌔";
+  if(t<22)   return "🌖";
+  return "🌘";
+}
+
+// ══════════════════════════════════════════════════════════════
+// HINDU MONTH (Solar / Saura Masa — Telugu Panchangam style)
+// ══════════════════════════════════════════════════════════════
+const HINDU_MONTHS=[
+  "Chaitra (చైత్రం)","Vaisakha (వైశాఖం)","Jyeshtha (జ్యేష్ఠం)","Ashadha (ఆషాఢం)",
+  "Shravana (శ్రావణం)","Bhadrapada (భాద్రపదం)","Ashwina (ఆశ్వయుజం)","Kartika (కార్తీకం)",
+  "Margashirsha (మార్గశిరం)","Pausha (పుష్యం)","Magha (మాఘం)","Phalguna (ఫాల్గుణం)"
+];
+function getHinduMonth(jd){
+  const sLon=norm360(sunLongitude(jd)-ayanamsa(jd));
+  return HINDU_MONTHS[Math.floor(sLon/30)%12];
+}
+
+// Solar Rasi
+const RASI=[
+  "Mesha (మేష)","Vrishabha (వృషభ)","Mithuna (మిథున)","Karka (కర్కాటక)",
+  "Simha (సింహ)","Kanya (కన్య)","Tula (తుల)","Vrischika (వృశ్చిక)",
+  "Dhanu (ధను)","Makara (మకర)","Kumbha (కుంభ)","Meena (మీన)"
+];
+function getSunRasi(jd){
+  const sLon=norm360(sunLongitude(jd)-ayanamsa(jd));
+  return RASI[Math.floor(sLon/30)%12];
+}
+
+// ══════════════════════════════════════════════════════════════
+// DAY NAMES
+// ══════════════════════════════════════════════════════════════
+const DAYS_ENG=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const DAYS_TEL=["ఆదివారం","సోమవారం","మంగళవారం","బుధవారం","గురువారం","శుక్రవారం","శనివారం"];
+
+// ══════════════════════════════════════════════════════════════
+// POPULATE DROPDOWN
+// ══════════════════════════════════════════════════════════════
+function populateCities(){
+  const sel=document.getElementById('placeSelect');
+  sel.innerHTML='<option value="">-- Select a Place --</option>';
+  savedLocations.forEach((loc,i)=>{
+    const o=document.createElement('option');
+    o.value=`saved:${i}`;
+    o.textContent=`⭐ ${loc.n}`;
+    sel.appendChild(o);
+  });
+  CITIES.forEach((c,i)=>{
+    const o=document.createElement('option');
+    o.value=i; o.textContent=c.n;
+    sel.appendChild(o);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// SET TODAY
+// ══════════════════════════════════════════════════════════════
+function setToday(){
+  const d=new Date();
+  document.getElementById('dateInput').value=
+    String(d.getDate()).padStart(2,'0')+'/'+
+    String(d.getMonth()+1).padStart(2,'0')+'/'+
+    d.getFullYear();
+}
+
+// ══════════════════════════════════════════════════════════════
+// GPS
+// ══════════════════════════════════════════════════════════════
+function getGPS(){
+  const st=document.getElementById('gpsStatus');
+  if(!navigator.geolocation){
+    st.textContent='⚠️ GPS not supported on this browser';
+    st.style.color='#FF9999'; return;
+  }
+  st.textContent='📡 Detecting location…';
+  st.style.color='#FFD700';
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      gpsLat=pos.coords.latitude;
+      gpsLon=pos.coords.longitude;
+      const coordDiv=document.getElementById('gpsCoords');
+      document.getElementById('gpsCoordsText').textContent=
+        `${gpsLat.toFixed(4)}°, ${gpsLon.toFixed(4)}°`;
+      coordDiv.style.display='block';
+      document.getElementById('saveGpsBtn').style.display='block';
+      // Insert / update GPS option in dropdown
+      const sel=document.getElementById('placeSelect');
+      let opt=sel.querySelector('option[value="gps"]');
+      if(!opt){
+        opt=document.createElement('option');
+        opt.value='gps';
+        sel.insertBefore(opt,sel.options[1]);
+      }
+      opt.textContent=`📍 GPS: ${formatCoordinate(gpsLat,'N','S')}, ${formatCoordinate(gpsLon,'E','W')}`;
+      sel.value='gps';
+      st.textContent=`✅ Location detected (${gpsLat.toFixed(4)}°, ${gpsLon.toFixed(4)}°)`;
+      st.style.color='#7CFC00';
+    },
+    err=>{
+      const msgs={1:'Permission denied — please allow location access.',
+                  2:'Position unavailable. Please select city manually.',
+                  3:'Request timed out. Please select city manually.'};
+      st.textContent='⚠️ '+(msgs[err.code]||'Unknown error');
+      st.style.color='#FF9999';
+    },
+    {timeout:12000,maximumAge:120000}
+  );
+}
+function saveCurrentGPSLocation(){
+  if(gpsLat===null||gpsLon===null){
+    showErr('⚠️ Capture the GPS location first, then save it.');
+    return;
+  }
+  clearErr();
+  const defaultName=`My Place ${savedLocations.length+1}`;
+  const entered=window.prompt('Enter a name for this GPS location:',defaultName);
+  if(entered===null) return;
+  const name=entered.trim();
+  if(!name){
+    showErr('⚠️ Saved location name cannot be empty.');
+    return;
+  }
+  const tz=estimateTimezone(gpsLat,gpsLon);
+  const existingIndex=savedLocations.findIndex(loc=>
+    Math.abs(loc.lat-gpsLat)<0.0001&&Math.abs(loc.lon-gpsLon)<0.0001
+  );
+  const record={n:name,lat:+gpsLat.toFixed(6),lon:+gpsLon.toFixed(6),tz};
+  if(existingIndex>=0) savedLocations[existingIndex]=record;
+  else savedLocations.unshift(record);
+  persistSavedLocations();
+  populateCities();
+  document.getElementById('placeSelect').value=`saved:${existingIndex>=0?existingIndex:0}`;
+  const st=document.getElementById('gpsStatus');
+  st.textContent=`✅ Saved "${name}" to your places list`;
+  st.style.color='#7CFC00';
+}
+
+// ══════════════════════════════════════════════════════════════
+// SHOW / HIDE ERROR
+// ══════════════════════════════════════════════════════════════
+function showErr(msg){
+  const e=document.getElementById('errorMsg');
+  e.textContent=msg; e.style.display='block';
+  document.getElementById('results').style.display='none';
+}
+function clearErr(){ document.getElementById('errorMsg').style.display='none'; }
+
+// ══════════════════════════════════════════════════════════════
+// RENDER SLOTS
+// ══════════════════════════════════════════════════════════════
+function renderSlots(container, startH, slotMinutes, dow, nowH, isNight){
+  let html='';
+  for(let i=0;i<30;i++){
+    const t0=startH+i*slotMinutes/60;
+    const t1=t0+slotMinutes/60;
+    const result=BHARGAV[i][dow];
+    const cat=getCategory(result);
+    const isNow=nowH>=t0&&nowH<t1;
+    html+=`<div class="slot${isNow?' now':''}${isNight?' night-slot':''}">
+      <div class="time">${hToTime(t0)}<br><small style="font-size:0.65rem;opacity:0.7;">to ${hToTime(t1)}</small></div>
+      <div class="result ${cat}">${result}${isNow?'<span class="now-badge">NOW</span>':''}</div>
+    </div>`;
+  }
+  container.innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// MAIN CALCULATE
+// ══════════════════════════════════════════════════════════════
+function calculate(){
+  clearErr();
+  document.getElementById('results').style.display='none';
+
+  // ── Parse date ───────────────────────────────────────────
+  let raw=document.getElementById('dateInput').value.trim().replace(/\s/g,'');
+  let day,month,year;
+  // Accept DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY, DDMMYYYY
+  const withSep=raw.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+  const noSep=raw.match(/^(\d{2})(\d{2})(\d{4})$/);
+  if(withSep){day=+withSep[1];month=+withSep[2];year=+withSep[3];}
+  else if(noSep){day=+noSep[1];month=+noSep[2];year=+noSep[3];}
+  else{showErr('⚠️ Invalid date. Use DD/MM/YYYY or DDMMYYYY');return;}
+
+  if(day<1||day>31||month<1||month>12||year<1800||year>2200)
+    {showErr('⚠️ Date out of valid range. Please check day/month/year.');return;}
+
+  // Validate date object
+  const testDate=new Date(year,month-1,day);
+  if(testDate.getFullYear()!==year||testDate.getMonth()!==month-1||testDate.getDate()!==day)
+    {showErr('⚠️ Invalid date (e.g. 31/02 does not exist).');return;}
+
+  // ── Get location ─────────────────────────────────────────
+  const sel=document.getElementById('placeSelect');
+  let lat,lon,tz,placeName;
+  if(sel.value==='gps'&&gpsLat!==null){
+    lat=gpsLat; lon=gpsLon;
+    tz=estimateTimezone(lat,lon);
+    placeName=`📍 GPS Location (${lat.toFixed(3)}°, ${lon.toFixed(3)}°)`;
+  } else if(sel.value.startsWith('saved:')){
+    const c=savedLocations[+sel.value.split(':')[1]];
+    if(!c){showErr('⚠️ Saved location was not found. Please reselect it.');return;}
+    lat=c.lat; lon=c.lon; tz=c.tz; placeName=`⭐ ${c.n}`;
+  } else if(sel.value!==''&&sel.value!=='gps'){
+    const c=CITIES[+sel.value];
+    lat=c.lat; lon=c.lon; tz=c.tz; placeName=c.n;
+  } else {
+    showErr('⚠️ Please select a place or use GPS location.');return;
+  }
+
+  // ── Sunrise/Sunset ───────────────────────────────────────
+  const ss=calcSunriseSunset(year,month,day,lat,lon,tz);
+  if(!ss){showErr('⚠️ Cannot calculate sunrise for this location/date.');return;}
+  const{sunrise,sunset}=ss;
+  const dayLen=sunset-sunrise;                  // hours
+  const nightLen=24-dayLen;                     // hours
+  const daySlotMin=dayLen*60/30;               // minutes per day slot
+  const nightSlotMin=nightLen*60/30;           // minutes per night slot
+
+  // ── Weekday ──────────────────────────────────────────────
+  const dow=testDate.getDay(); // 0=Sun … 6=Sat
+
+  // ── Hindu calendar ───────────────────────────────────────
+  const jd=julianDay(year,month,day);
+  const tIdx=getTithi(jd);
+  const hindMonth=getHinduMonth(jd);
+  const rasi=getSunRasi(jd);
+
+  // ── Current time (for NOW indicator) ────────────────────
+  const now=new Date();
+  const isToday=(now.getFullYear()===year&&(now.getMonth()+1)===month&&now.getDate()===day);
+  // Current time in same "local hours" units as sunrise/sunset
+  // (assume the device clock = the selected location's local time for Indian cities)
+  const nowH=isToday?(now.getHours()+now.getMinutes()/60):-999;
+
+  // ── Panchang Info ────────────────────────────────────────
+  const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const pak=tIdx<14?"Shukla Paksha ☀️":tIdx===14?"Purnima 🌕":tIdx===29?"Amavasya 🌑":"Krishna Paksha 🌙";
+
+  document.getElementById('panchaInfo').innerHTML=`
+    <div class="info-cell span2">
+      <div class="lbl">📅 Date &amp; Weekday</div>
+      <div class="val gold">${String(day).padStart(2,'0')} ${MON[month-1]} ${year}</div>
+      <div class="val" style="font-size:0.82rem;color:#FFCC88;margin-top:3px;">
+        ${DAYS_ENG[dow]} &nbsp;|&nbsp; ${DAYS_TEL[dow]}
+      </div>
+    </div>
+    <div class="info-cell span2">
+      <div class="lbl">📍 Place (Lat: ${lat.toFixed(2)}° Lon: ${lon.toFixed(2)}°)</div>
+      <div class="val small">${placeName}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">🌅 Sunrise</div>
+      <div class="val green">${hToTime(sunrise)}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">🌇 Sunset</div>
+      <div class="val orange">${hToTime(sunset)}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">🕐 Day Length</div>
+      <div class="val small">${Math.floor(dayLen)}h ${Math.round((dayLen%1)*60)}m</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">🌙 Night Length</div>
+      <div class="val small">${Math.floor(nightLen)}h ${Math.round((nightLen%1)*60)}m</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">📅 Hindu Month</div>
+      <div class="val small">${hindMonth}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">☀️ Surya Rasi</div>
+      <div class="val small">${rasi}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">${moonEmoji(tIdx)} Tithi</div>
+      <div class="val small">${TITHI_ENG[tIdx]}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">తిథి (Telugu)</div>
+      <div class="val small">${TITHI_TEL[tIdx]}</div>
+    </div>
+    <div class="info-cell span2">
+      <div class="lbl">🌗 Paksha</div>
+      <div class="val small">${pak}</div>
+    </div>
+  `;
+
+  // ── Render day slots ─────────────────────────────────────
+  renderSlots(
+    document.getElementById('daySlots'),
+    sunrise, daySlotMin, dow, nowH, false
+  );
+
+  // ── Render night slots ───────────────────────────────────
+  renderSlots(
+    document.getElementById('nightSlots'),
+    sunset, nightSlotMin, dow, nowH, true
+  );
+
+  // ── Show results ─────────────────────────────────────────
+  document.getElementById('results').style.display='block';
+  setTimeout(()=>{
+    document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+  },80);
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUTO-FORMAT DATE INPUT
+// ══════════════════════════════════════════════════════════════
+function initDateInput(){
+  const inp=document.getElementById('dateInput');
+  inp.addEventListener('input',function(){
+    let v=this.value.replace(/\D/g,'');
+    if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2);
+    if(v.length>5) v=v.slice(0,5)+'/'+v.slice(5);
+    if(v.length>10) v=v.slice(0,10);
+    this.value=v;
+  });
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();calculate();}
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  savedLocations=getSavedLocations();
+  populateCities();
+  setToday();
+  initDateInput();
+  setupInstallPrompt();
+  registerServiceWorker();
+});
+</script>
+</body>
+</html>
