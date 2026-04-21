@@ -1,4 +1,4 @@
-const CACHE_NAME='bhargava-panchangam-v8';
+const CACHE_NAME='bhargava-panchangam-v9';
 const APP_SHELL=[
   './',
   './index.html',
@@ -30,6 +30,16 @@ self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET') return;
   if(new URL(event.request.url).pathname.startsWith('/api/')){
     event.respondWith(fetch(event.request));
+    return;
+  }
+  if(event.request.mode==='navigate'){
+    event.respondWith(
+      fetch(event.request).then(response=>{
+        const cloned=response.clone();
+        caches.open(CACHE_NAME).then(cache=>cache.put('./index.html',cloned));
+        return response;
+      }).catch(()=>caches.match('./index.html'))
+    );
     return;
   }
   event.respondWith(
