@@ -1,7 +1,8 @@
-const CACHE_NAME='bhargava-panchangam-v1';
+const CACHE_NAME='bhargava-panchangam-v8';
 const APP_SHELL=[
   './',
   './index.html',
+  './engine-client.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -27,6 +28,10 @@ self.addEventListener('activate',event=>{
 
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET') return;
+  if(new URL(event.request.url).pathname.startsWith('/api/')){
+    event.respondWith(fetch(event.request));
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then(cached=>{
       if(cached) return cached;

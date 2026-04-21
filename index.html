@@ -93,6 +93,25 @@ body{
   white-space:nowrap;
   flex-shrink:0;
 }
+.calendar-btn{
+  padding:11px 14px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,215,0,0.35);
+  border-radius:9px;
+  color:#FFD700;
+  font-size:0.95rem;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.native-date-input{
+  position:absolute;
+  width:1px;
+  height:1px;
+  opacity:0;
+  pointer-events:none;
+}
 
 /* ── Buttons ───────────────────────────────────── */
 .btn{
@@ -171,7 +190,7 @@ body{
 /* ── Panchang Info Grid ────────────────────────── */
 .info-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:repeat(2,minmax(0,1fr));
   gap:8px;
 }
 .info-cell{
@@ -180,6 +199,7 @@ body{
   padding:10px 9px;
   text-align:center;
   border:1px solid rgba(255,215,0,0.12);
+  min-width:0;
 }
 .info-cell.span2{grid-column:1/-1;}
 .info-cell .lbl{
@@ -189,11 +209,35 @@ body{
   letter-spacing:0.6px;
   margin-bottom:5px;
 }
-.info-cell .val{font-size:0.9rem;font-weight:600;color:#fff;line-height:1.3;}
+.info-cell .val{
+  font-size:0.9rem;
+  font-weight:600;
+  color:#fff;
+  line-height:1.3;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
 .info-cell .val.gold{color:#FFD700;}
 .info-cell .val.green{color:#7CFC00;}
 .info-cell .val.orange{color:#FFA500;}
-.info-cell .val.small{font-size:0.78rem;}
+.info-cell .val.small{font-size:0.76rem;}
+
+@media (max-width:380px){
+  .info-cell{
+    padding:9px 8px;
+  }
+  .info-cell .lbl{
+    font-size:0.6rem;
+    letter-spacing:0.4px;
+  }
+  .info-cell .val{
+    font-size:0.84rem;
+  }
+  .info-cell .val.small{
+    font-size:0.72rem;
+  }
+}
 
 /* ── Slot Table ────────────────────────────────── */
 .period-label{
@@ -233,6 +277,7 @@ body{
   border-left:3px solid transparent;
   background:rgba(255,255,255,0.03);
 }
+.slot > div{min-width:0;}
 .slot.now{
   background:rgba(255,215,0,0.13);
   border-left:3px solid #FFD700;
@@ -241,6 +286,132 @@ body{
 }
 .slot .time{font-size:0.72rem;color:#FFAA66;line-height:1.3;}
 .slot .result{font-size:0.88rem;font-weight:600;line-height:1.3;}
+.slot-extra{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  margin-top:7px;
+  padding-top:7px;
+  border-top:1px solid rgba(255,215,0,0.12);
+}
+.slot-meta{
+  background:rgba(255,255,255,0.035);
+  border:1px solid rgba(255,215,0,0.1);
+  border-radius:7px;
+  padding:6px 7px;
+}
+.slot-meta-label{
+  font-size:0.56rem;
+  color:#FFCC88;
+  text-transform:uppercase;
+  letter-spacing:0.45px;
+  margin-bottom:3px;
+}
+.slot-meta-value{
+  font-size:0.7rem;
+  color:#F7F0D6;
+  line-height:1.25;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+@media (max-width:560px){
+  .slot-extra{
+    grid-template-columns:1fr;
+  }
+}
+.timeline-actions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.timeline-btn{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,215,0,0.28);
+  color:#FFD78A;
+  padding:10px 8px;
+  border-radius:10px;
+  font-size:0.78rem;
+  font-weight:700;
+  cursor:pointer;
+}
+.timeline-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.74);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:9999;
+}
+.timeline-modal-card{
+  width:min(720px,100%);
+  max-height:85vh;
+  overflow:auto;
+  background:linear-gradient(180deg,#241308,#120805);
+  border:1px solid rgba(255,215,0,0.25);
+  border-radius:16px;
+  box-shadow:0 18px 60px rgba(0,0,0,0.45);
+  padding:16px;
+}
+.timeline-modal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.timeline-modal-title{
+  color:#FFD78A;
+  font-size:1rem;
+  font-weight:800;
+}
+.timeline-close{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,215,0,0.18);
+  color:#FFD78A;
+  border-radius:9px;
+  padding:8px 10px;
+  cursor:pointer;
+}
+.timeline-note{
+  font-size:0.76rem;
+  color:#FFCC88;
+  margin-bottom:10px;
+}
+.timeline-row{
+  display:grid;
+  grid-template-columns:132px 1fr;
+  gap:10px;
+  padding:9px 0;
+  border-top:1px solid rgba(255,215,0,0.12);
+}
+.timeline-row:first-of-type{border-top:none;}
+.timeline-time{
+  color:#FFAA66;
+  font-size:0.78rem;
+  font-weight:700;
+}
+.timeline-name{
+  color:#F7F0D6;
+  font-size:0.84rem;
+  line-height:1.35;
+}
+.timeline-empty{
+  color:#FFCC88;
+  font-size:0.8rem;
+}
+@media (max-width:560px){
+  .timeline-actions{
+    grid-template-columns:1fr;
+  }
+  .timeline-row{
+    grid-template-columns:1fr;
+    gap:4px;
+  }
+}
 .now-badge{
   display:inline-block;
   font-size:0.55rem;
@@ -273,6 +444,36 @@ body{
   text-align:center;
   line-height:1.5;
   margin-bottom:16px;
+}
+.public-disclaimer{
+  font-size:0.68rem;
+  color:rgba(255,255,255,0.55);
+  text-align:center;
+  line-height:1.6;
+  margin:0 0 14px;
+  padding:10px 12px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+}
+.provider-note{
+  text-align:center;
+  margin:10px 0 16px;
+  padding:10px 12px;
+  border:1px solid rgba(255,215,0,0.14);
+  border-radius:10px;
+  background:rgba(255,215,0,0.04);
+}
+.provider-note .guru{
+  color:#FFD78A;
+  font-size:0.9rem;
+  font-weight:700;
+  letter-spacing:0.2px;
+}
+.provider-note .provider{
+  color:#FFCC88;
+  font-size:0.74rem;
+  margin-top:4px;
 }
 
 /* ── Footer ────────────────────────────────────── */
@@ -315,10 +516,21 @@ footer a{color:rgba(255,215,0,0.4);text-decoration:none;}
 
     <div class="date-row">
       <div class="form-row">
-        <label for="dateInput">Date</label>
-        <input type="date" id="dateInput" autocomplete="off">
+        <label for="dateInput">Date (DD-MM-YYYY)</label>
+        <input type="text" id="dateInput" placeholder="14-04-2026"
+               maxlength="10" inputmode="numeric" autocomplete="off">
+        <input type="date" id="nativeDateInput" class="native-date-input" tabindex="-1" aria-hidden="true">
       </div>
+      <button class="calendar-btn" type="button" onclick="openCalendarPicker()">📅</button>
       <button class="today-btn" onclick="setToday()">Today</button>
+    </div>
+
+    <div class="date-row" style="margin-top:11px;">
+      <div class="form-row">
+        <label for="timeInput">Time (HH:MM)</label>
+        <input type="time" id="timeInput" step="60" autocomplete="off">
+      </div>
+      <button class="today-btn" type="button" onclick="setCurrentTime()">Now</button>
     </div>
 
     <div class="form-row" style="margin-top:11px;">
@@ -347,6 +559,14 @@ footer a{color:rgba(255,215,0,0.4);text-decoration:none;}
       <div class="info-grid" id="panchaInfo"></div>
     </div>
 
+    <div class="card" id="timingToolsCard" style="display:none;">
+      <div class="card-title">â± Exact Time Windows</div>
+      <div class="timeline-actions">
+        <button class="timeline-btn" type="button" onclick="openTimelineModal('hora')">Hora Windows</button>
+        <button class="timeline-btn" type="button" onclick="openTimelineModal('lagna')">Lagna Windows</button>
+      </div>
+    </div>
+
     <!-- Bhargav Schedule -->
     <div class="card">
       <div class="card-title">🌅 Bhargava Ghadiyalu — Day</div>
@@ -371,6 +591,28 @@ footer a{color:rgba(255,215,0,0.4);text-decoration:none;}
       need to check Tithi, Nakshatra, Varjam, Yama Gandam or Rahu Kalam separately.
     </p>
 
+    <div class="provider-note">
+      <div class="guru">Jaya Ramajogeswara Gurudev</div>
+      <div class="provider">Provider: Gurusthan, Peddamangalaram, Hyderabad</div>
+    </div>
+
+    <p class="public-disclaimer">
+      Disclaimer: This Panchangam is provided for general informational and spiritual guidance only.
+      Timings and results are based on the calculation method used in this application and may vary
+      slightly from other traditions or Panchang systems. Please use personal discretion for important
+      decisions and consult a qualified expert where required.
+    </p>
+
+  </div>
+</div>
+
+<div class="timeline-modal" id="timelineModal" onclick="closeTimelineModal(event)">
+  <div class="timeline-modal-card" onclick="event.stopPropagation()">
+    <div class="timeline-modal-head">
+      <div class="timeline-modal-title" id="timelineModalTitle">Time Windows</div>
+      <button class="timeline-close" type="button" onclick="closeTimelineModal()">Close</button>
+    </div>
+    <div id="timelineModalBody"></div>
   </div>
 </div>
 
@@ -597,7 +839,7 @@ function persistSavedLocations(){
 function registerServiceWorker(){
   if(!('serviceWorker' in navigator)) return;
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    navigator.serviceWorker.register('./sw.js?v=20260420f').catch(()=>{});
   });
 }
 function setupInstallPrompt(){
@@ -657,6 +899,21 @@ function formatEventTime(jd,Y,M,D,tz){
 function formatDurationHours(hours){
   return `${Math.floor(hours)}h ${Math.round((hours%1)*60)}m`;
 }
+function pad2(v){ return String(v).padStart(2,'0'); }
+function formatDateForDisplay(Y,M,D){
+  return `${pad2(D)}-${pad2(M)}-${Y}`;
+}
+function formatDateForNative(Y,M,D){
+  return `${Y}-${pad2(M)}-${pad2(D)}`;
+}
+function parseDisplayDate(raw){
+  const value=raw.trim().replace(/\s/g,'');
+  const withSep=value.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+  const noSep=value.match(/^(\d{2})(\d{2})(\d{4})$/);
+  if(withSep) return {day:+withSep[1],month:+withSep[2],year:+withSep[3]};
+  if(noSep) return {day:+noSep[1],month:+noSep[2],year:+noSep[3]};
+  return null;
+}
 
 // ══════════════════════════════════════════════════════════════
 // SUNRISE / SUNSET  (NOAA Solar Calculator)
@@ -707,40 +964,55 @@ function calcSunriseSunset(Y,M,D,lat,lon,tz){
 function sunLongitude(jd){
   const T=(jd-2451545.0)/36525;
   const L0=norm360(280.46646+T*(36000.76983+T*0.0003032));
-  const MA=norm360(357.52911+T*(35999.05029-0.0001537*T));
-  const MAr=toRad(MA);
-  const C=(1.914602-T*(0.004817+0.000014*T))*Math.sin(MAr)
-          +(0.019993-0.000101*T)*Math.sin(2*MAr)
-          +0.000289*Math.sin(3*MAr);
-  return norm360(L0+C);
+  const M=norm360(357.52911+T*(35999.05029-0.0001537*T));
+  const Mr=toRad(M);
+  const C=(1.914602-T*(0.004817+0.000014*T))*Math.sin(Mr)
+          +(0.019993-0.000101*T)*Math.sin(2*Mr)
+          +0.000289*Math.sin(3*Mr);
+  const trueLong=L0+C;
+  const omega=125.04-1934.136*T;
+  return norm360(trueLong-0.00569-0.00478*Math.sin(toRad(omega)));
 }
 
-// MOON LONGITUDE (simplified Meeus)
 function moonLongitude(jd){
-  const T=(jd-2451545.0)/36525;
-  const Lp=norm360(218.3165+481267.8813*T);
-  const D =norm360(297.8502+445267.1115*T);
-  const M =norm360(357.5291+ 35999.0503*T);
-  const Mp=norm360(134.9634+477198.8676*T);
-  const F =norm360( 93.2721+483202.0175*T);
+  const d=jd-2451543.5;
+  const Lm=norm360(218.3164477+13.17639648*d);
+  const Mm=norm360(134.9633964+13.06499295*d);
+  const Ms=norm360(357.5291092+0.98560028*d);
+  const D=norm360(297.8501921+12.19074912*d);
+  const F=norm360(93.2720950+13.22935024*d);
+
   return norm360(
-    Lp
-    +6.2888*Math.sin(toRad(Mp))
-    -1.2740*Math.sin(toRad(2*D-Mp))
-    +0.6583*Math.sin(toRad(2*D))
-    +0.2136*Math.sin(toRad(2*Mp))
-    -0.1851*Math.sin(toRad(M))
-    -0.1143*Math.sin(toRad(2*F))
-    +0.0588*Math.sin(toRad(2*D-2*Mp))
-    +0.0572*Math.sin(toRad(2*D-M-Mp))
-    +0.0533*Math.sin(toRad(2*D+Mp))
+    Lm
+    +6.289*Math.sin(toRad(Mm))
+    +1.274*Math.sin(toRad(2*D-Mm))
+    +0.658*Math.sin(toRad(2*D))
+    +0.214*Math.sin(toRad(2*Mm))
+    -0.186*Math.sin(toRad(Ms))
+    -0.114*Math.sin(toRad(2*F))
+    +0.059*Math.sin(toRad(2*D-2*Mm))
+    +0.057*Math.sin(toRad(2*D-Ms-Mm))
+    +0.053*Math.sin(toRad(2*D+Mm))
+    +0.046*Math.sin(toRad(2*D-Ms))
+    +0.041*Math.sin(toRad(Mm-Ms))
+    -0.035*Math.sin(toRad(D))
+    -0.031*Math.sin(toRad(Mm+Ms))
+    -0.015*Math.sin(toRad(2*F-2*D))
+    +0.011*Math.sin(toRad(Mm-4*D))
+    -0.009*Math.sin(toRad(2*F-Mm))
+    -0.008*Math.sin(toRad(2*D+Ms))
+    +0.007*Math.sin(toRad(2*D+Ms-Mm))
+    +0.007*Math.sin(toRad(Ms+Mm))
+    +0.006*Math.sin(toRad(D+Mm))
+    +0.005*Math.sin(toRad(Ms-D))
+    +0.005*Math.sin(toRad(Mm-D))
+    +0.004*Math.sin(toRad(2*D+2*Mm))
   );
 }
 
-// Lahiri Ayanamsa (approx)
 function ayanamsa(jd){
   const T=(jd-2451545.0)/36525;
-  return 23.85+0.013597*T;
+  return 23.853055 + 1.396042*T + 0.000308*T*T;
 }
 function siderealSunLongitude(jd){
   return norm360(sunLongitude(jd)-ayanamsa(jd));
@@ -816,7 +1088,7 @@ function getKaranaIndex(jd){
 }
 function findNextChange(jdStart,getter,maxHours=36){
   const current=getter(jdStart);
-  const step=1/144;
+  const step=1/288;
   let probe=jdStart+step;
   const limit=jdStart+maxHours/24;
   while(probe<=limit&&getter(probe)===current) probe+=step;
@@ -865,6 +1137,90 @@ function getHoraInfo(referenceHour,sunrise,sunset,nextSunrise,dow,isToday){
   }
   const ruler=HORA_SEQUENCE[(baseIndex+horaIndex)%7];
   return {ruler,start,end,phaseLabel};
+}
+function formatRanges(ranges){
+  return ranges.map(range=>formatRange(range.start,range.end)).join('<br>');
+}
+
+const AMRITA_START_HOURS=[
+  16.8,19.2,21.6,20.8,15.2,14.0,21.6,17.6,22.4,
+  21.6,17.6,16.8,18.0,17.6,15.2,15.2,13.6,15.2,
+  17.6,19.2,17.6,13.6,13.6,16.8,16.0,19.2,21.6
+];
+const VARJYAM_START_HOURS=[
+  [20.0],[9.6],[12.0],[16.0],[5.6],[8.4],[12.0],[8.0],[12.8],
+  [12.0],[8.0],[7.2],[8.4],[8.0],[5.6],[5.6],[4.0],[5.6],
+  [8.0,22.4],[9.6],[8.0],[4.0],[4.0],[7.2],[6.4],[9.6],[12.0]
+];
+
+function findPreviousChange(jdStart,getter,maxHours=36){
+  const current=getter(jdStart);
+  const step=1/288;
+  let probe=jdStart-step;
+  const limit=jdStart-maxHours/24;
+  while(probe>=limit&&getter(probe)===current) probe-=step;
+  if(probe<limit) return null;
+  let lo=probe, hi=probe+step;
+  for(let i=0;i<24;i++){
+    const mid=(lo+hi)/2;
+    if(getter(mid)===current) hi=mid;
+    else lo=mid;
+  }
+  return hi;
+}
+
+function getNakshatraWindowsForDay(year,month,day,tz){
+  const dayStartJD=localTimeToJD(year,month,day,0,tz);
+  const dayEndJD=dayStartJD+1;
+  const seed=dayStartJD+(1/86400);
+  let startJD=findPreviousChange(seed,getNakshatraIndex,48);
+  if(startJD===null) startJD=dayStartJD;
+  const windows=[];
+
+  for(let guard=0;guard<8&&startJD<dayEndJD+1;guard++){
+    const probeJD=startJD+(1/86400);
+    const nakIdx=getNakshatraIndex(probeJD);
+    const endJD=findNextChange(probeJD,getNakshatraIndex,48) || (startJD+1);
+    const durationHours=(endJD-startJD)*24;
+    const eventDurationHours=durationHours*(1.6/24);
+    const amritaStartJD=startJD+(AMRITA_START_HOURS[nakIdx]*durationHours/24)/24;
+    const amritaEndJD=amritaStartJD+eventDurationHours/24;
+    const varjyamStartJDs=VARJYAM_START_HOURS[nakIdx].map(offset=>
+      startJD+(offset*durationHours/24)/24
+    );
+
+    windows.push({
+      nakshatra: NAKSHATRA_ENG[nakIdx],
+      startJD,
+      endJD,
+      amrita: {startJD:amritaStartJD,endJD:amritaEndJD},
+      varjyam: varjyamStartJDs.map(eventStartJD=>({
+        startJD:eventStartJD,
+        endJD:eventStartJD+eventDurationHours/24
+      }))
+    });
+    startJD=endJD;
+  }
+  return windows;
+}
+
+function toDayRanges(events,year,month,day,tz){
+  const dayStartJD=localTimeToJD(year,month,day,0,tz);
+  const dayEndJD=dayStartJD+1;
+  return events
+    .filter(event=>event.endJD>dayStartJD&&event.startJD<dayEndJD)
+    .map(event=>({
+      label:event.label,
+      start:jdToLocalHour(event.startJD,year,month,day,tz),
+      end:jdToLocalHour(event.endJD,year,month,day,tz)
+    }));
+}
+
+function formatLabeledRanges(ranges){
+  if(!ranges.length) return 'None on this day';
+  return ranges.map(range=>
+    `${formatRange(range.start,range.end)}<br><span style="font-size:0.68rem;color:#FFCC88;">${range.label}</span>`
+  ).join('<br>');
 }
 
 // Moon phase emoji
@@ -931,10 +1287,31 @@ function populateCities(){
 // ══════════════════════════════════════════════════════════════
 function setToday(){
   const d=new Date();
-  document.getElementById('dateInput').value=
-    String(d.getDate()).padStart(2,'0')+'/'+
-    String(d.getMonth()+1).padStart(2,'0')+'/'+
-    d.getFullYear();
+  document.getElementById('dateInput').value=formatDateForDisplay(d.getFullYear(),d.getMonth()+1,d.getDate());
+  document.getElementById('nativeDateInput').value=formatDateForNative(d.getFullYear(),d.getMonth()+1,d.getDate());
+  setCurrentTime();
+}
+function setCurrentTime(){
+  const d=new Date();
+  document.getElementById('timeInput').value=`${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+function syncNativeDateFromText(){
+  const parsed=parseDisplayDate(document.getElementById('dateInput').value);
+  const nativeInput=document.getElementById('nativeDateInput');
+  if(!parsed){
+    nativeInput.value='';
+    return;
+  }
+  nativeInput.value=formatDateForNative(parsed.year,parsed.month,parsed.day);
+}
+function openCalendarPicker(){
+  syncNativeDateFromText();
+  const nativeInput=document.getElementById('nativeDateInput');
+  if(typeof nativeInput.showPicker==='function'){
+    nativeInput.showPicker();
+    return;
+  }
+  nativeInput.click();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1041,19 +1418,16 @@ function renderSlots(container, startH, slotMinutes, dow, nowH, isNight){
 // ══════════════════════════════════════════════════════════════
 // MAIN CALCULATE
 // ══════════════════════════════════════════════════════════════
-function calculate(){
+function calculateLegacy(){
   clearErr();
   document.getElementById('results').style.display='none';
 
   // ── Parse date ───────────────────────────────────────────
-  let raw=document.getElementById('dateInput').value.trim().replace(/\s/g,'');
+  let raw=document.getElementById('dateInput').value;
   let day,month,year;
-  // Accept DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY, DDMMYYYY
-  const withSep=raw.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
-  const noSep=raw.match(/^(\d{2})(\d{2})(\d{4})$/);
-  if(withSep){day=+withSep[1];month=+withSep[2];year=+withSep[3];}
-  else if(noSep){day=+noSep[1];month=+noSep[2];year=+noSep[3];}
-  else{showErr('⚠️ Invalid date. Use DD/MM/YYYY or DDMMYYYY');return;}
+  const parsedDate=parseDisplayDate(raw);
+  if(parsedDate){day=parsedDate.day;month=parsedDate.month;year=parsedDate.year;}
+  else{showErr('⚠️ Invalid date. Use DD-MM-YYYY, DD/MM/YYYY or DDMMYYYY');return;}
 
   if(day<1||day>31||month<1||month>12||year<1800||year>2200)
     {showErr('⚠️ Date out of valid range. Please check day/month/year.');return;}
@@ -1184,16 +1558,233 @@ function calculate(){
 // ══════════════════════════════════════════════════════════════
 function initDateInput(){
   const inp=document.getElementById('dateInput');
+  const nativeInput=document.getElementById('nativeDateInput');
   inp.addEventListener('input',function(){
     let v=this.value.replace(/\D/g,'');
-    if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2);
-    if(v.length>5) v=v.slice(0,5)+'/'+v.slice(5);
+    if(v.length>2) v=v.slice(0,2)+'-'+v.slice(2);
+    if(v.length>5) v=v.slice(0,5)+'-'+v.slice(5);
     if(v.length>10) v=v.slice(0,10);
     this.value=v;
+    syncNativeDateFromText();
   });
   inp.addEventListener('keydown',function(e){
     if(e.key==='Enter'){e.preventDefault();calculate();}
   });
+  nativeInput.addEventListener('change',function(){
+    if(!this.value) return;
+    const [year,month,day]=this.value.split('-').map(Number);
+    inp.value=formatDateForDisplay(year,month,day);
+  });
+}
+
+function calculate(){
+  clearErr();
+  document.getElementById('results').style.display='none';
+
+  const raw=document.getElementById('dateInput').value;
+  const parsedDate=parseDisplayDate(raw);
+  if(!parsedDate){
+    showErr('⚠️ Invalid date. Use DD-MM-YYYY, DD/MM/YYYY or DDMMYYYY');
+    return;
+  }
+  const {day,month,year}=parsedDate;
+  if(day<1||day>31||month<1||month>12||year<1800||year>2200){
+    showErr('⚠️ Date out of valid range. Please check day/month/year.');
+    return;
+  }
+
+  const testDate=new Date(year,month-1,day);
+  if(testDate.getFullYear()!==year||testDate.getMonth()!==month-1||testDate.getDate()!==day){
+    showErr('⚠️ Invalid date (e.g. 31/02 does not exist).');
+    return;
+  }
+
+  const sel=document.getElementById('placeSelect');
+  let lat,lon,tz,placeName;
+  if(sel.value==='gps'&&gpsLat!==null){
+    lat=gpsLat;
+    lon=gpsLon;
+    tz=estimateTimezone(lat,lon);
+    placeName=`📍 GPS Location (${lat.toFixed(3)}°, ${lon.toFixed(3)}°)`;
+  } else if(sel.value.startsWith('saved:')){
+    const c=savedLocations[+sel.value.split(':')[1]];
+    if(!c){
+      showErr('⚠️ Saved location was not found. Please reselect it.');
+      return;
+    }
+    lat=c.lat;
+    lon=c.lon;
+    tz=c.tz;
+    placeName=`⭐ ${c.n}`;
+  } else if(sel.value!==''&&sel.value!=='gps'){
+    const c=CITIES[+sel.value];
+    lat=c.lat;
+    lon=c.lon;
+    tz=c.tz;
+    placeName=c.n;
+  } else {
+    showErr('⚠️ Please select a place or use GPS location.');
+    return;
+  }
+
+  const ss=calcSunriseSunset(year,month,day,lat,lon,tz);
+  if(!ss){
+    showErr('⚠️ Cannot calculate sunrise for this location/date.');
+    return;
+  }
+  const {sunrise,sunset}=ss;
+  const nextDate=new Date(year,month-1,day+1);
+  const nextSS=calcSunriseSunset(nextDate.getFullYear(),nextDate.getMonth()+1,nextDate.getDate(),lat,lon,tz);
+  const nextSunrise=nextSS?nextSS.sunrise+24:sunrise+24;
+  const dayLen=sunset-sunrise;
+  const nightLen=24-dayLen;
+  const daySlotMin=dayLen*60/30;
+  const nightSlotMin=nightLen*60/30;
+
+  const dow=testDate.getDay();
+  const jd=julianDay(year,month,day);
+  const jdSunrise=localTimeToJD(year,month,day,sunrise,tz);
+  const displayTithiIdx=getTithi(jd);
+  const tithiAtSunrise=getTithi(jdSunrise);
+  const hindMonth=getHinduMonth(jd);
+  const rasi=getSunRasi(jd);
+  const nakIdx=getNakshatraIndex(jdSunrise);
+  const yogaIdx=getYogaIndex(jdSunrise);
+  const karanaIdx=getKaranaIndex(jdSunrise);
+  const tithiChangeJD=findNextChange(jdSunrise,getTithi,36);
+  const nakChangeJD=findNextChange(jdSunrise,getNakshatraIndex,36);
+  const yogaChangeJD=findNextChange(jdSunrise,getYogaIndex,36);
+  const karanaChangeJD=findNextChange(jdSunrise,getKaranaIndex,24);
+  const rahuRange=getDaySegmentRange(sunrise,sunset,RAHU_SEGMENT[dow]);
+  const yamagandaRange=getDaySegmentRange(sunrise,sunset,YAMAGANDA_SEGMENT[dow]);
+  const durmuhurtaRanges=getDurmuhurtaRanges(sunrise,sunset,dow);
+  const nakshatraWindows=getNakshatraWindowsForDay(year,month,day,tz);
+  const amritaRanges=toDayRanges(
+    nakshatraWindows.map(window=>({
+      label:window.nakshatra,
+      startJD:window.amrita.startJD,
+      endJD:window.amrita.endJD
+    })),
+    year,month,day,tz
+  );
+  const varjyamRanges=toDayRanges(
+    nakshatraWindows.flatMap(window=>window.varjyam.map(event=>({
+      label:window.nakshatra,
+      startJD:event.startJD,
+      endJD:event.endJD
+    }))),
+    year,month,day,tz
+  );
+
+  const now=new Date();
+  const isToday=(now.getFullYear()===year&&(now.getMonth()+1)===month&&now.getDate()===day);
+  const nowH=isToday?(now.getHours()+now.getMinutes()/60):-999;
+  const horaInfo=getHoraInfo(isToday?nowH:sunrise,sunrise,sunset,nextSunrise,dow,isToday);
+
+  const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const pak=displayTithiIdx<14?"Shukla Paksha ☀️":displayTithiIdx===14?"Purnima 🌕":displayTithiIdx===29?"Amavasya 🌑":"Krishna Paksha 🌙";
+  const tithiUntil=tithiChangeJD?formatEventTime(tithiChangeJD,year,month,day,tz):'--';
+  const nakUntil=nakChangeJD?formatEventTime(nakChangeJD,year,month,day,tz):'--';
+  const yogaUntil=yogaChangeJD?formatEventTime(yogaChangeJD,year,month,day,tz):'--';
+  const karanaUntil=karanaChangeJD?formatEventTime(karanaChangeJD,year,month,day,tz):'--';
+
+  document.getElementById('panchaInfo').innerHTML=`
+    <div class="info-cell span2">
+      <div class="lbl">📅 Date &amp; Weekday</div>
+      <div class="val gold">${String(day).padStart(2,'0')} ${MON[month-1]} ${year}</div>
+      <div class="val" style="font-size:0.82rem;color:#FFCC88;margin-top:3px;">
+        ${DAYS_ENG[dow]} &nbsp;|&nbsp; ${DAYS_TEL[dow]}
+      </div>
+    </div>
+    <div class="info-cell span2">
+      <div class="lbl">📍 Place (Lat: ${lat.toFixed(2)}° Lon: ${lon.toFixed(2)}°)</div>
+      <div class="val small">${placeName}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Vara</div>
+      <div class="val small">${DAYS_ENG[dow]}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Hora</div>
+      <div class="val small">${horaInfo.ruler}<br><span style="font-size:0.68rem;color:#FFCC88;">${formatRange(horaInfo.start,horaInfo.end)}</span></div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">🌄 Sunrise</div>
+      <div class="val green">${hToTime(sunrise)}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">🌇 Sunset</div>
+      <div class="val orange">${hToTime(sunset)}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">🕐 Day Length</div>
+      <div class="val small">${formatDurationHours(dayLen)}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">🌙 Night Length</div>
+      <div class="val small">${formatDurationHours(nightLen)}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">📆 Hindu Month</div>
+      <div class="val small">${hindMonth}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">☀️ Surya Rasi</div>
+      <div class="val small">${rasi}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">${moonEmoji(displayTithiIdx)} Tithi</div>
+      <div class="val small">${TITHI_ENG[tithiAtSunrise]}<br><span style="font-size:0.68rem;color:#FFCC88;">till ${tithiUntil}</span></div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">తిథి (Telugu)</div>
+      <div class="val small">${TITHI_TEL[tithiAtSunrise]}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Nakshatra</div>
+      <div class="val small">${NAKSHATRA_ENG[nakIdx]}<br><span style="font-size:0.68rem;color:#FFCC88;">till ${nakUntil}</span></div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Yoga</div>
+      <div class="val small">${YOGA_ENG[yogaIdx]}<br><span style="font-size:0.68rem;color:#FFCC88;">till ${yogaUntil}</span></div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Karana</div>
+      <div class="val small">${KARANA_ENG[karanaIdx]}<br><span style="font-size:0.68rem;color:#FFCC88;">till ${karanaUntil}</span></div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Rahu Kalam</div>
+      <div class="val small">${formatRange(rahuRange.start,rahuRange.end)}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Yamagandam</div>
+      <div class="val small">${formatRange(yamagandaRange.start,yamagandaRange.end)}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Durmuhurtam</div>
+      <div class="val small">${formatRanges(durmuhurtaRanges)}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Amrita Gadiyalu</div>
+      <div class="val small">${formatLabeledRanges(amritaRanges)}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Varjyam</div>
+      <div class="val small">${formatLabeledRanges(varjyamRanges)}</div>
+    </div>
+    <div class="info-cell span2">
+      <div class="lbl">🌗 Paksha</div>
+      <div class="val small">${pak}</div>
+    </div>
+  `;
+
+  renderSlots(document.getElementById('daySlots'),sunrise,daySlotMin,dow,nowH,false);
+  renderSlots(document.getElementById('nightSlots'),sunset,nightSlotMin,dow,nowH,true);
+
+  document.getElementById('results').style.display='block';
+  setTimeout(()=>{
+    document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+  },80);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1208,5 +1799,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   registerServiceWorker();
 });
 </script>
+<script src="./engine-client.js?v=20260420f"></script>
 </body>
 </html>
