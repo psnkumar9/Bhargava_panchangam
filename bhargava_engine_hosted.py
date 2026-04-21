@@ -321,13 +321,6 @@ def _load_pyjhora_modules():
         Path(r"E:\AstroEngine\pydeps"),
     ]
     last_error = None
-    try:
-        from jhora.panchanga import drik as jdrik  # type: ignore
-        from jhora import const as jconst  # type: ignore
-        from jhora import utils as jutils  # type: ignore
-        return jdrik, jutils, jconst
-    except ModuleNotFoundError as exc:
-        last_error = exc
     for candidate in candidate_paths:
         if not candidate.exists():
             continue
