@@ -254,10 +254,39 @@ def _format_hms(hours: float) -> str:
     return f"{hh:02d}:{mm:02d}"
 
 
+def _format_ampm(hours: float) -> str:
+    total_minutes = int(round(hours * 60))
+    hh24, mm = divmod(total_minutes, 60)
+    suffix = "AM" if hh24 < 12 else "PM"
+    hh12 = hh24 % 12
+    if hh12 == 0:
+        hh12 = 12
+    return f"{hh12:02d}:{mm:02d} {suffix}"
+
+
+def _date_label(date_str: str, day_offset: int) -> str:
+    dt = datetime.fromisoformat(date_str) + timedelta(days=day_offset)
+    return dt.strftime("%d %b %Y")
+
+
+def _format_event_time(hours: float, date_str: str | None = None, *, include_date_for_offset: bool = True) -> str:
+    day_offset = 0
+    while hours < 0:
+        hours += 24.0
+        day_offset -= 1
+    while hours >= 24.0:
+        hours -= 24.0
+        day_offset += 1
+    text = _format_ampm(hours)
+    if date_str and day_offset != 0 and include_date_for_offset:
+        return f"{_date_label(date_str, day_offset)} {text}"
+    return text
+
+
 def _format_event_hms(hours: float) -> str:
     if hours < 0:
-        return f"{_format_hms(hours + 24.0)} (-1)"
-    return _format_hms(hours)
+        return f"{_format_event_time(hours + 24.0)} (-1)"
+    return _format_event_time(hours)
 
 
 def _format_clock_with_offset(hours: float) -> str:
@@ -268,7 +297,7 @@ def _format_clock_with_offset(hours: float) -> str:
     while hours >= 24.0:
         hours -= 24.0
         day_offset += 1
-    text = _format_hms(hours)
+    text = _format_event_time(hours, include_date_for_offset=False)
     if day_offset > 0:
         return f"{text} (+{day_offset})"
     if day_offset < 0:
@@ -299,18 +328,18 @@ def _local_hours_from_utc_jd(jd_utc: float, local_midnight_utc_jd: float) -> flo
     return (jd_utc - local_midnight_utc_jd) * 24.0
 
 
-def _range_to_display(start_utc: float, end_utc: float, local_midnight_utc_jd: float) -> dict:
+def _range_to_display(start_utc: float, end_utc: float, local_midnight_utc_jd: float, date_str: str | None = None) -> dict:
     start_h = _local_hours_from_utc_jd(start_utc, local_midnight_utc_jd)
     end_h = _local_hours_from_utc_jd(end_utc, local_midnight_utc_jd)
     return {
         "start_hours": start_h,
         "end_hours": end_h,
-        "display": f"{_format_event_hms(start_h)} - {_format_event_hms(end_h)}",
+        "display": f"{_format_event_time(start_h, date_str)} - {_format_event_time(end_h, date_str)}",
     }
 
 
-def _event_display_from_utc(jd_utc: float, local_midnight_utc_jd: float) -> str:
-    return _format_hms(_local_hours_from_utc_jd(jd_utc, local_midnight_utc_jd))
+def _event_display_from_utc(jd_utc: float, local_midnight_utc_jd: float, date_str: str | None = None) -> str:
+    return _format_event_time(_local_hours_from_utc_jd(jd_utc, local_midnight_utc_jd), date_str)
 
 
 @lru_cache(maxsize=1)
@@ -321,6 +350,13 @@ def _load_pyjhora_modules():
         Path(r"E:\AstroEngine\pydeps"),
     ]
     last_error = None
+    try:
+        from jhora.panchanga import drik as jdrik  # type: ignore
+        from jhora import const as jconst  # type: ignore
+        from jhora import utils as jutils  # type: ignore
+        return jdrik, jutils, jconst
+    except ModuleNotFoundError as exc:
+        last_error = exc
     for candidate in candidate_paths:
         if not candidate.exists():
             continue
@@ -573,6 +609,7 @@ def _collect_same_day_entries(
     local_midnight_utc_jd: float,
     index_fn: Callable[[float], int],
     name_lookup: list[str | None],
+    date_str: str,
     max_days_back: float = 2.0,
 ) -> list[dict]:
     day_end = local_midnight_utc_jd + 1.0
@@ -588,7 +625,7 @@ def _collect_same_day_entries(
             entries.append({
                 "number": current_index,
                 "name": name_lookup[current_index] if current_index < len(name_lookup) else str(current_index),
-                "end_display": _event_display_from_utc(next_transition, local_midnight_utc_jd),
+                "end_display": _event_display_from_utc(next_transition, local_midnight_utc_jd, date_str),
             })
         if next_transition >= day_end:
             break
@@ -700,6 +737,7 @@ def _nakshatra_segments_for_day(local_midnight_utc_jd: float) -> list[Segment]:
 def _clip_events(
     segments: list[Segment],
     local_midnight_utc_jd: float,
+    date_str: str,
     start_offsets: list[float],
     label: str,
 ) -> list[dict]:
@@ -713,7 +751,7 @@ def _clip_events(
             event_end = event_start + event_duration_hours / 24.0
             if event_start < local_midnight_utc_jd or event_start >= day_end:
                 continue
-            payload = _range_to_display(event_start, event_end, local_midnight_utc_jd)
+            payload = _range_to_display(event_start, event_end, local_midnight_utc_jd, date_str)
             payload["nakshatra"] = segment.label
             payload["kind"] = label
             results.append(payload)
@@ -776,18 +814,18 @@ def calculate_panchanga(
     varjyam_events = []
     for segment in nak_segments:
         idx = NAKSHATRA_NAMES.index(segment.label)
-        amrita_events.extend(_clip_events([segment], local_midnight_utc_jd, [AMRITA_START_HOURS[idx - 1]], "amrita"))
-        varjyam_events.extend(_clip_events([segment], local_midnight_utc_jd, VARJYAM_START_HOURS[idx - 1], "varjyam"))
+        amrita_events.extend(_clip_events([segment], local_midnight_utc_jd, date_str, [AMRITA_START_HOURS[idx - 1]], "amrita"))
+        varjyam_events.extend(_clip_events([segment], local_midnight_utc_jd, date_str, VARJYAM_START_HOURS[idx - 1], "varjyam"))
 
-    tithi_entries = _collect_same_day_entries(local_midnight_utc_jd, _tithi_index, TITHI_NAMES)
-    nakshatra_entries = _collect_same_day_entries(local_midnight_utc_jd, _nakshatra_index, NAKSHATRA_NAMES)
-    yoga_entries = _collect_same_day_entries(local_midnight_utc_jd, _yoga_index, YOGA_NAMES)
-    karana_entries = _collect_same_day_entries(local_midnight_utc_jd, _karana_index, KARANA_NAMES)
+    tithi_entries = _collect_same_day_entries(local_midnight_utc_jd, _tithi_index, TITHI_NAMES, date_str)
+    nakshatra_entries = _collect_same_day_entries(local_midnight_utc_jd, _nakshatra_index, NAKSHATRA_NAMES, date_str)
+    yoga_entries = _collect_same_day_entries(local_midnight_utc_jd, _yoga_index, YOGA_NAMES, date_str)
+    karana_entries = _collect_same_day_entries(local_midnight_utc_jd, _karana_index, KARANA_NAMES, date_str)
 
-    tithi_end_display = _format_hms(_hms_to_hours(tithi_data[1]))
-    nak_end_display = _format_hms(_hms_to_hours(nakshatra_data[1]))
-    yoga_end_display = _format_hms(_hms_to_hours(yoga_data[1]))
-    karana_end_display = _format_hms(_local_hours_from_utc_jd(karana_end_utc, local_midnight_utc_jd)) if karana_end_utc else "--"
+    tithi_end_display = _format_event_time(_hms_to_hours(tithi_data[1]), date_str)
+    nak_end_display = _format_event_time(_hms_to_hours(nakshatra_data[1]), date_str)
+    yoga_end_display = _format_event_time(_hms_to_hours(yoga_data[1]), date_str)
+    karana_end_display = _event_display_from_utc(karana_end_utc, local_midnight_utc_jd, date_str) if karana_end_utc else "--"
     current_lagna = _lagna_context(date_str, reference_hours, latitude, longitude, tz_hours)
     hora_timeline = _hora_timeline(previous_sunset_hours, sunrise_hours, sunset_hours, next_sunrise_hours, weekday)
     lagna_timeline = _merge_short_timeline_segments(_collect_local_timeline(
@@ -802,7 +840,7 @@ def calculate_panchanga(
         "date": date_str,
         "timezone": timezone_name,
         "timezone_offset_hours": tz_hours,
-        "reference_time": _format_hms(reference_hours),
+        "reference_time": _format_event_time(reference_hours, date_str),
         "weekday": {"number": weekday, "name": VARA_NAMES[weekday]},
         "sunrise": {"hours": sunrise_hours, "display": _format_hms(sunrise_hours)},
         "sunset": {"hours": sunset_hours, "display": _format_hms(sunset_hours)},
@@ -839,9 +877,9 @@ def calculate_panchanga(
         "hora": hora,
         "lagna": current_lagna,
         "anandadi_yoga": None,
-        "rahu_kalam": {"display": f"{_format_hms(rahu_start)} - {_format_hms(rahu_end)}"},
-        "yamagandam": {"display": f"{_format_hms(yama_start)} - {_format_hms(yama_end)}"},
-        "durmuhurtam": [{"display": f"{_format_hms(start)} - {_format_hms(end)}"} for start, end in _durmuhurta_ranges(sunrise_hours, sunset_hours, weekday)],
+        "rahu_kalam": {"display": f"{_format_event_time(rahu_start, date_str)} - {_format_event_time(rahu_end, date_str)}"},
+        "yamagandam": {"display": f"{_format_event_time(yama_start, date_str)} - {_format_event_time(yama_end, date_str)}"},
+        "durmuhurtam": [{"display": f"{_format_event_time(start, date_str)} - {_format_event_time(end, date_str)}"} for start, end in _durmuhurta_ranges(sunrise_hours, sunset_hours, weekday)],
         "amrita_gadiyalu": amrita_events,
         "varjyam": varjyam_events,
         "timelines": {
