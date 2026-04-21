@@ -7,8 +7,6 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from bhargava_engine_hosted import calculate_panchanga
-
 
 ROOT = Path(__file__).resolve().parent
 
@@ -39,6 +37,8 @@ class BhargavaHostedHandler(SimpleHTTPRequestHandler):
             longitude = float(params["lon"][0])
             timezone_name = params.get("timezone", ["Asia/Kolkata"])[0]
             tz_offset = float(params["tz"][0]) if "tz" in params else None
+            from bhargava_engine_hosted import calculate_panchanga
+
             payload = calculate_panchanga(
                 date,
                 latitude,
