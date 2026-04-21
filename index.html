@@ -86,6 +86,28 @@ body{
 }
 .form-row input:focus,.form-row select:focus{border-color:#FFD700;}
 .form-row select option{background:#1a0800;color:#fff;}
+.language-choice{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin-top:6px;
+}
+.language-choice label{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  min-height:34px;
+  padding:7px 6px;
+  background:rgba(0,0,0,0.32);
+  border:1px solid rgba(255,215,0,0.22);
+  border-radius:8px;
+  color:#F7F0D6;
+  font-size:0.72rem;
+  line-height:1.15;
+  text-align:center;
+}
+.language-choice input{width:auto;accent-color:#FFD700;}
 .date-row{display:flex;gap:8px;align-items:flex-end;}
 .date-row .form-row{flex:1;margin-bottom:0;}
 .today-btn{
@@ -293,6 +315,13 @@ body{
 }
 .slot .time{font-size:0.72rem;color:#FFAA66;line-height:1.3;}
 .slot .result{font-size:0.88rem;font-weight:600;line-height:1.3;}
+.slot .result .english-result{
+  display:block;
+  margin-top:2px;
+  font-size:0.68rem;
+  color:#FFCC88;
+  font-weight:500;
+}
 .slot-extra{
   grid-column:1 / -1;
   display:grid;
@@ -522,6 +551,17 @@ footer a{color:rgba(255,215,0,0.4);text-decoration:none;}
   <div class="card" id="inputCard">
     <div class="card-title">📅 Enter Details</div>
 
+    <div class="form-row">
+      <label>Display Language</label>
+      <div class="language-choice" id="languageChoice">
+        <label><input type="radio" name="displayLang" value="en" checked> English</label>
+        <label><input type="radio" name="displayLang" value="te"> Telugu</label>
+        <label><input type="radio" name="displayLang" value="hi"> Hindi</label>
+        <label><input type="radio" name="displayLang" value="ta"> Tamil</label>
+        <label><input type="radio" name="displayLang" value="kn"> Kannada</label>
+      </div>
+    </div>
+
     <div class="date-row">
       <div class="form-row">
         <label for="dateInput">Date (DD-MM-YYYY)</label>
@@ -727,6 +767,323 @@ function getCategory(r){
 // ══════════════════════════════════════════════════════════════
 // CITIES DATABASE  (name, lat, lon, tz=UTC offset hours)
 // ══════════════════════════════════════════════════════════════
+const DISPLAY_LANG_STORAGE_KEY = "bhargavaDisplayLanguage";
+const SUPPORTED_DISPLAY_LANGS = new Set(["en", "te", "hi", "ta", "kn"]);
+
+// Add reviewed translations here. Non-English display keeps English in brackets
+// so every translated result can be verified against the canonical table value.
+const BHARGAV_RESULT_I18N = {
+  te: {
+    'Accidents': 'ప్రమాదాలు',
+    'Achievement': 'ఫల సిద్ధి',
+    'Achievements': 'ఫల సిద్ధులు',
+    'Agony': 'వేదన',
+    'Bad News': 'చెడు వార్త',
+    'Bad Omen': 'అపశకునం',
+    'Blockage': 'ఆటంకం',
+    'Comforts': 'సౌఖ్యాలు',
+    'Defeat': 'పరాజయం',
+    'Depression': 'నిరుత్సాహం',
+    'Disease': 'వ్యాధి',
+    'Dispute': 'వివాదం',
+    'Enemity': 'శత్రుత్వం',
+    'Expenditure': 'ఖర్చు',
+    'Extraordinary Success': 'అసాధారణ విజయం',
+    'Failure': 'వైఫల్యం',
+    'Failure at Work': 'పనిలో వైఫల్యం',
+    'Failures': 'వైఫల్యాలు',
+    'Fear': 'భయం',
+    'Fear of Theft': 'దొంగతన భయం',
+    'Felicitation': 'సన్మానం',
+    'Fights': 'కలహాలు',
+    'Financial Gain': 'ధన లాభం',
+    'Financial Gains': 'ధన లాభాలు',
+    'Financial Loss': 'ధన నష్టం',
+    'Friendship': 'స్నేహం',
+    'Friendship Gain': 'స్నేహ లాభం',
+    'Fulfillment': 'సాఫల్యం',
+    'Fulfillment of Desire': 'కోరిక నెరవేరడం',
+    'Gain in Job': 'ఉద్యోగ లాభం',
+    'Gains': 'లాభాలు',
+    'Good': 'మంచి',
+    'Good Health': 'మంచి ఆరోగ్యం',
+    'Good Relation with Opposite Sex': 'విరుద్ధ లింగంతో మంచి సంబంధం',
+    'Growth': 'అభివృద్ధి',
+    'Growth of Enemies': 'శత్రువుల వృద్ధి',
+    'Happiness': 'సంతోషం',
+    'Hardship': 'కష్టం',
+    'Ill Health': 'అనారోగ్యం',
+    'Journey': 'ప్రయాణం',
+    'Knowledge': 'జ్ఞానం',
+    'Land Gain': 'భూ లాభం',
+    'Loss': 'నష్టం',
+    'Loss at Work': 'పనిలో నష్టం',
+    'Loss of Comforts': 'సౌఖ్య నష్టం',
+    'Mental Depression': 'మానసిక నిరుత్సాహం',
+    'Mixed Results': 'మిశ్రమ ఫలితాలు',
+    'Obstacles': 'అడ్డంకులు',
+    'Power Gain': 'అధికార లాభం',
+    'Profit': 'లాభం',
+    'Profits': 'లాభాలు',
+    'Respect': 'గౌరవం',
+    'Rumours': 'వదంతులు',
+    'Safe': 'సురక్షితం',
+    'Safety': 'భద్రత',
+    'Satisfaction': 'సంతృప్తి',
+    'Sorrow': 'దుఃఖం',
+    'Success': 'విజయం',
+    'Success at Work': 'పనిలో విజయం',
+    'Threat': 'ముప్పు',
+    'Troubles': 'ఇబ్బందులు',
+    'Victory': 'విజయం',
+    'Victory at Work': 'పనిలో విజయం',
+    'Victory over Enemies': 'శత్రువులపై విజయం',
+    'Wastage': 'వృధా వ్యయం',
+  },
+  hi: {
+    'Accidents': 'दुर्घटनाएँ',
+    'Achievement': 'उपलब्धि',
+    'Achievements': 'उपलब्धियाँ',
+    'Agony': 'पीड़ा',
+    'Bad News': 'बुरी खबर',
+    'Bad Omen': 'अपशकुन',
+    'Blockage': 'रुकावट',
+    'Comforts': 'सुख-सुविधाएँ',
+    'Defeat': 'पराजय',
+    'Depression': 'निराशा',
+    'Disease': 'रोग',
+    'Dispute': 'विवाद',
+    'Enemity': 'शत्रुता',
+    'Expenditure': 'खर्च',
+    'Extraordinary Success': 'असाधारण सफलता',
+    'Failure': 'असफलता',
+    'Failure at Work': 'कार्य में असफलता',
+    'Failures': 'असफलताएँ',
+    'Fear': 'भय',
+    'Fear of Theft': 'चोरी का भय',
+    'Felicitation': 'सम्मान',
+    'Fights': 'झगड़े',
+    'Financial Gain': 'धन लाभ',
+    'Financial Gains': 'धन लाभ',
+    'Financial Loss': 'धन हानि',
+    'Friendship': 'मित्रता',
+    'Friendship Gain': 'मित्र लाभ',
+    'Fulfillment': 'पूर्ति',
+    'Fulfillment of Desire': 'इच्छा पूर्ति',
+    'Gain in Job': 'नौकरी में लाभ',
+    'Gains': 'लाभ',
+    'Good': 'शुभ',
+    'Good Health': 'अच्छा स्वास्थ्य',
+    'Good Relation with Opposite Sex': 'विपरीत लिंग से अच्छे संबंध',
+    'Growth': 'वृद्धि',
+    'Growth of Enemies': 'शत्रुओं की वृद्धि',
+    'Happiness': 'प्रसन्नता',
+    'Hardship': 'कठिनाई',
+    'Ill Health': 'अस्वास्थ्य',
+    'Journey': 'यात्रा',
+    'Knowledge': 'ज्ञान',
+    'Land Gain': 'भूमि लाभ',
+    'Loss': 'हानि',
+    'Loss at Work': 'कार्य में हानि',
+    'Loss of Comforts': 'सुख-सुविधाओं की हानि',
+    'Mental Depression': 'मानसिक निराशा',
+    'Mixed Results': 'मिश्रित फल',
+    'Obstacles': 'बाधाएँ',
+    'Power Gain': 'अधिकार लाभ',
+    'Profit': 'लाभ',
+    'Profits': 'लाभ',
+    'Respect': 'सम्मान',
+    'Rumours': 'अफवाहें',
+    'Safe': 'सुरक्षित',
+    'Safety': 'सुरक्षा',
+    'Satisfaction': 'संतोष',
+    'Sorrow': 'दुःख',
+    'Success': 'सफलता',
+    'Success at Work': 'कार्य में सफलता',
+    'Threat': 'खतरा',
+    'Troubles': 'परेशानियाँ',
+    'Victory': 'विजय',
+    'Victory at Work': 'कार्य में विजय',
+    'Victory over Enemies': 'शत्रुओं पर विजय',
+    'Wastage': 'अपव्यय',
+  },
+  ta: {
+    'Accidents': 'விபத்துகள்',
+    'Achievement': 'சாதனை',
+    'Achievements': 'சாதனைகள்',
+    'Agony': 'வேதனை',
+    'Bad News': 'கெட்ட செய்தி',
+    'Bad Omen': 'தீய சகுனம்',
+    'Blockage': 'தடங்கல்',
+    'Comforts': 'சுகங்கள்',
+    'Defeat': 'தோல்வி',
+    'Depression': 'மனச்சோர்வு',
+    'Disease': 'நோய்',
+    'Dispute': 'தகராறு',
+    'Enemity': 'பகைமை',
+    'Expenditure': 'செலவு',
+    'Extraordinary Success': 'அசாதாரண வெற்றி',
+    'Failure': 'தோல்வி',
+    'Failure at Work': 'பணியில் தோல்வி',
+    'Failures': 'தோல்விகள்',
+    'Fear': 'பயம்',
+    'Fear of Theft': 'திருட்டு பயம்',
+    'Felicitation': 'பாராட்டு',
+    'Fights': 'சண்டைகள்',
+    'Financial Gain': 'பண லாபம்',
+    'Financial Gains': 'பண லாபங்கள்',
+    'Financial Loss': 'பண இழப்பு',
+    'Friendship': 'நட்பு',
+    'Friendship Gain': 'நட்பு லாபம்',
+    'Fulfillment': 'நிறைவேற்றம்',
+    'Fulfillment of Desire': 'ஆசை நிறைவேறுதல்',
+    'Gain in Job': 'வேலை லாபம்',
+    'Gains': 'லாபங்கள்',
+    'Good': 'நன்மை',
+    'Good Health': 'நல்ல ஆரோக்கியம்',
+    'Good Relation with Opposite Sex': 'எதிர்பாலினத்தவருடன் நல்ல உறவு',
+    'Growth': 'வளர்ச்சி',
+    'Growth of Enemies': 'பகைவர்களின் வளர்ச்சி',
+    'Happiness': 'மகிழ்ச்சி',
+    'Hardship': 'கஷ்டம்',
+    'Ill Health': 'உடல்நலக்குறைவு',
+    'Journey': 'பயணம்',
+    'Knowledge': 'அறிவு',
+    'Land Gain': 'நில லாபம்',
+    'Loss': 'இழப்பு',
+    'Loss at Work': 'பணியில் இழப்பு',
+    'Loss of Comforts': 'சுக இழப்பு',
+    'Mental Depression': 'மனச்சோர்வு',
+    'Mixed Results': 'கலந்த பலன்கள்',
+    'Obstacles': 'தடைகள்',
+    'Power Gain': 'அதிகார லாபம்',
+    'Profit': 'லாபம்',
+    'Profits': 'லாபங்கள்',
+    'Respect': 'மரியாதை',
+    'Rumours': 'வதந்திகள்',
+    'Safe': 'பாதுகாப்பாக',
+    'Safety': 'பாதுகாப்பு',
+    'Satisfaction': 'திருப்தி',
+    'Sorrow': 'துக்கம்',
+    'Success': 'வெற்றி',
+    'Success at Work': 'பணியில் வெற்றி',
+    'Threat': 'அச்சுறுத்தல்',
+    'Troubles': 'பிரச்சினைகள்',
+    'Victory': 'வெற்றி',
+    'Victory at Work': 'பணியில் வெற்றி',
+    'Victory over Enemies': 'பகைவர்கள்மீது வெற்றி',
+    'Wastage': 'வீண்செலவு',
+  },
+  kn: {
+    'Accidents': 'ಅಪಘಾತಗಳು',
+    'Achievement': 'ಸಾಧನೆ',
+    'Achievements': 'ಸಾಧನೆಗಳು',
+    'Agony': 'ವೇದನೆ',
+    'Bad News': 'ಕೆಟ್ಟ ಸುದ್ದಿ',
+    'Bad Omen': 'ಅಪಶಕುನ',
+    'Blockage': 'ಅಡಚಣೆ',
+    'Comforts': 'ಸೌಖ್ಯಗಳು',
+    'Defeat': 'ಸೋಲು',
+    'Depression': 'ನಿರಾಶೆ',
+    'Disease': 'ರೋಗ',
+    'Dispute': 'ವಿವಾದ',
+    'Enemity': 'ಶತ್ರುತ್ವ',
+    'Expenditure': 'ಖರ್ಚು',
+    'Extraordinary Success': 'ಅಸಾಧಾರಣ ಯಶಸ್ಸು',
+    'Failure': 'ವೈಫಲ್ಯ',
+    'Failure at Work': 'ಕೆಲಸದಲ್ಲಿ ವೈಫಲ್ಯ',
+    'Failures': 'ವೈಫಲ್ಯಗಳು',
+    'Fear': 'ಭಯ',
+    'Fear of Theft': 'ಕಳ್ಳತನದ ಭಯ',
+    'Felicitation': 'ಸನ್ಮಾನ',
+    'Fights': 'ಜಗಳಗಳು',
+    'Financial Gain': 'ಧನ ಲಾಭ',
+    'Financial Gains': 'ಧನ ಲಾಭಗಳು',
+    'Financial Loss': 'ಧನ ನಷ್ಟ',
+    'Friendship': 'ಸ್ನೇಹ',
+    'Friendship Gain': 'ಸ್ನೇಹ ಲಾಭ',
+    'Fulfillment': 'ಸಾಫಲ್ಯ',
+    'Fulfillment of Desire': 'ಆಸೆ ನೆರವೇರುವುದು',
+    'Gain in Job': 'ಉದ್ಯೋಗದಲ್ಲಿ ಲಾಭ',
+    'Gains': 'ಲಾಭಗಳು',
+    'Good': 'ಶುಭ',
+    'Good Health': 'ಉತ್ತಮ ಆರೋಗ್ಯ',
+    'Good Relation with Opposite Sex': 'ವಿರುದ್ದ ಲಿಂಗದವರೊಂದಿಗೆ ಉತ್ತಮ ಸಂಬಂಧ',
+    'Growth': 'ಅಭಿವೃದ್ಧಿ',
+    'Growth of Enemies': 'ಶತ್ರುಗಳ ವೃದ್ಧಿ',
+    'Happiness': 'ಸಂತೋಷ',
+    'Hardship': 'ಕಷ್ಟ',
+    'Ill Health': 'ಅನಾರೋಗ್ಯ',
+    'Journey': 'ಪ್ರಯಾಣ',
+    'Knowledge': 'ಜ್ಞಾನ',
+    'Land Gain': 'ಭೂ ಲಾಭ',
+    'Loss': 'ನಷ್ಟ',
+    'Loss at Work': 'ಕೆಲಸದಲ್ಲಿ ನಷ್ಟ',
+    'Loss of Comforts': 'ಸೌಖ್ಯ ನಷ್ಟ',
+    'Mental Depression': 'ಮಾನಸಿಕ ನಿರಾಶೆ',
+    'Mixed Results': 'ಮಿಶ್ರ ಫಲಿತಾಂಶಗಳು',
+    'Obstacles': 'ಅಡೆತಡೆಗಳು',
+    'Power Gain': 'ಅಧಿಕಾರ ಲಾಭ',
+    'Profit': 'ಲಾಭ',
+    'Profits': 'ಲಾಭಗಳು',
+    'Respect': 'ಗೌರವ',
+    'Rumours': 'ವದಂತಿಗಳು',
+    'Safe': 'ಸುರಕ್ಷಿತ',
+    'Safety': 'ಸುರಕ್ಷತೆ',
+    'Satisfaction': 'ತೃಪ್ತಿ',
+    'Sorrow': 'ದುಃಖ',
+    'Success': 'ಯಶಸ್ಸು',
+    'Success at Work': 'ಕೆಲಸದಲ್ಲಿ ಯಶಸ್ಸು',
+    'Threat': 'ಬೆದರಿಕೆ',
+    'Troubles': 'ತೊಂದರೆಗಳು',
+    'Victory': 'ಜಯ',
+    'Victory at Work': 'ಕೆಲಸದಲ್ಲಿ ಜಯ',
+    'Victory over Enemies': 'ಶತ್ರುಗಳ ಮೇಲೆ ಜಯ',
+    'Wastage': 'ವ್ಯರ್ಥ ಖರ್ಚು',
+  }
+};
+
+function escapeHtml(text){
+  return String(text).replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[ch]);
+}
+
+function getDisplayLang(){
+  const selected = document.querySelector('input[name="displayLang"]:checked')?.value || "en";
+  return SUPPORTED_DISPLAY_LANGS.has(selected) ? selected : "en";
+}
+
+function formatBhargavResult(result){
+  const lang = getDisplayLang();
+  const translated = BHARGAV_RESULT_I18N[lang]?.[result];
+  if(lang === "en" || !translated || translated === result){
+    return escapeHtml(result);
+  }
+  return `${escapeHtml(translated)}<span class="english-result">(${escapeHtml(result)})</span>`;
+}
+
+function initDisplayLanguage(){
+  const saved = localStorage.getItem(DISPLAY_LANG_STORAGE_KEY);
+  const lang = SUPPORTED_DISPLAY_LANGS.has(saved) ? saved : "en";
+  const input = document.querySelector(`input[name="displayLang"][value="${lang}"]`);
+  if(input) input.checked = true;
+  document.querySelectorAll('input[name="displayLang"]').forEach(item => {
+    item.addEventListener("change", () => {
+      localStorage.setItem(DISPLAY_LANG_STORAGE_KEY, getDisplayLang());
+      if(document.getElementById("results")?.style.display === "block"){
+        calculate();
+      }
+    });
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initDisplayLanguage);
+
 const CITIES = [
   // ── Andhra Pradesh ──────────────────────────────────────
   {n:"Hyderabad, Telangana",       lat:17.3850, lon:78.4867, tz:5.5},
@@ -1417,7 +1774,7 @@ function renderSlots(container, startH, slotMinutes, dow, nowH, isNight){
     const isNow=nowH>=t0&&nowH<t1;
     html+=`<div class="slot${isNow?' now':''}${isNight?' night-slot':''}">
       <div class="time">${hToTime(t0)}<br><small style="font-size:0.65rem;opacity:0.7;">to ${hToTime(t1)}</small></div>
-      <div class="result ${cat}">${result}${isNow?'<span class="now-badge">NOW</span>':''}</div>
+      <div class="result ${cat}">${formatBhargavResult(result)}${isNow?'<span class="now-badge">NOW</span>':''}</div>
     </div>`;
   }
   container.innerHTML=html;
@@ -1807,6 +2164,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   registerServiceWorker();
 });
 </script>
-<script src="./engine-client.js?v=20260420f"></script>
+<script src="./engine-client.js?v=20260421lang2"></script>
 </body>
 </html>

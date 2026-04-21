@@ -1,8 +1,8 @@
-const CACHE_NAME='bhargava-panchangam-v9';
+const CACHE_NAME='bhargava-panchangam-v10';
 const APP_SHELL=[
   './',
   './index.html',
-  './engine-client.js',
+  './engine-client.js?v=20260421lang2',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',

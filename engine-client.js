@@ -1,3 +1,20 @@
+function escapeSlotHtml(text){
+  return String(text).replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[ch]);
+}
+
+function formatSlotBhargavResult(result){
+  if(typeof formatBhargavResult === 'function'){
+    return formatBhargavResult(result);
+  }
+  return escapeSlotHtml(result);
+}
+
 function formatEngineEventList(items){
   if(!items || !items.length) return 'None on this day';
   return items.map(item =>
@@ -32,7 +49,7 @@ function renderSlots(container, startH, slotMinutes, dow, nowH, isNight){
     const isNow=nowH>=t0&&nowH<t1;
     html+=`<div class="slot${isNow?' now':''}${isNight?' night-slot':''}">
       <div class="time">${hToTime(t0)}<br><small style="font-size:0.65rem;opacity:0.7;">to ${hToTime(t1)}</small></div>
-      <div class="result ${cat}">${result}${isNow?'<span class="now-badge">NOW</span>':''}</div>
+      <div class="result ${cat}">${formatSlotBhargavResult(result)}${isNow?'<span class="now-badge">NOW</span>':''}</div>
     </div>`;
   }
   container.innerHTML=html;
