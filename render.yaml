@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: bhargava-panchangam
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-hosted.txt
+    startCommand: python hosted_app.py
+    autoDeploy: true
