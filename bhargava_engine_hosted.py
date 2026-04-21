@@ -367,9 +367,19 @@ def _pyjhora_context(date_str: str, local_hours: float, latitude: float, longitu
 
 
 def _lagna_context(date_str: str, local_hours: float, latitude: float, longitude: float, tz_hours: float) -> dict:
-    jdrik, jconst, jd, place = _pyjhora_context(date_str, local_hours, latitude, longitude, tz_hours)
-    sign_index, sign_degrees, nakshatra_no, pada_no = jdrik.ascendant(jd, place)
-    sign_name = jconst.rasi_names_en[sign_index]
+    local_dt = _local_datetime_from_date_hours(date_str, local_hours)
+    utc_dt = local_dt - timedelta(hours=tz_hours)
+    utc_hours = utc_dt.hour + utc_dt.minute / 60.0 + utc_dt.second / 3600.0 + utc_dt.microsecond / 3_600_000_000.0
+    jd_ut = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_hours)
+    swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
+    _cusps, ascmc = swe.houses_ex(jd_ut, latitude, longitude, b"P", swe.FLG_SIDEREAL)
+    asc_longitude = ascmc[0] % 360.0
+    sign_zero_index = int(asc_longitude // 30.0)
+    sign_index = sign_zero_index + 1
+    sign_degrees = asc_longitude - sign_zero_index * 30.0
+    nakshatra_no = int(asc_longitude * 27.0 / 360.0) + 1
+    pada_no = int((asc_longitude % (360.0 / 27.0)) / (360.0 / 108.0)) + 1
+    sign_name = RASI_NAMES[sign_index]
     return {
         "name": sign_name,
         "degrees": sign_degrees,
@@ -786,7 +796,6 @@ def calculate_panchanga(
     yoga_end_display = _format_hms(_hms_to_hours(yoga_data[1]))
     karana_end_display = _format_hms(_local_hours_from_utc_jd(karana_end_utc, local_midnight_utc_jd)) if karana_end_utc else "--"
     current_lagna = _lagna_context(date_str, reference_hours, latitude, longitude, tz_hours)
-    current_anandadi = _anandadi_context(date_str, reference_hours, latitude, longitude, tz_hours)
     hora_timeline = _hora_timeline(previous_sunset_hours, sunrise_hours, sunset_hours, next_sunrise_hours, weekday)
     lagna_timeline = _merge_short_timeline_segments(_collect_local_timeline(
         0.0,
@@ -794,13 +803,6 @@ def calculate_panchanga(
         lambda local_hours: _lagna_context(date_str, local_hours, latitude, longitude, tz_hours)["name"],
         lambda local_hours: {"name": _lagna_context(date_str, local_hours, latitude, longitude, tz_hours)["display"]},
         step_minutes=5.0,
-    ), min_minutes=1.0)
-    anandadi_timeline = _merge_short_timeline_segments(_collect_local_timeline(
-        0.0,
-        24.0,
-        lambda local_hours: _anandadi_context(date_str, local_hours, latitude, longitude, tz_hours)["index"],
-        lambda local_hours: {"name": _anandadi_context(date_str, local_hours, latitude, longitude, tz_hours)["name"]},
-        step_minutes=10.0,
     ), min_minutes=1.0)
 
     return {
@@ -843,7 +845,7 @@ def calculate_panchanga(
         },
         "hora": hora,
         "lagna": current_lagna,
-        "anandadi_yoga": current_anandadi,
+        "anandadi_yoga": None,
         "rahu_kalam": {"display": f"{_format_hms(rahu_start)} - {_format_hms(rahu_end)}"},
         "yamagandam": {"display": f"{_format_hms(yama_start)} - {_format_hms(yama_end)}"},
         "durmuhurtam": [{"display": f"{_format_hms(start)} - {_format_hms(end)}"} for start, end in _durmuhurta_ranges(sunrise_hours, sunset_hours, weekday)],
@@ -852,7 +854,6 @@ def calculate_panchanga(
         "timelines": {
             "hora": hora_timeline,
             "lagna": lagna_timeline,
-            "anandadi_yoga": anandadi_timeline,
         },
     }
 
