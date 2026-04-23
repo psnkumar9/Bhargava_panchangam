@@ -33,6 +33,33 @@ body{
   box-shadow:0 4px 20px rgba(0,0,0,0.5);
 }
 .om{font-size:2.2rem;color:#FFD700;line-height:1.2;display:block;text-shadow:0 0 20px rgba(255,215,0,0.5);}
+.app-header > .om{display:none;}
+.opening-gurus{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:6px;
+}
+.guru-opening-photo{
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid rgba(255,215,0,0.75);
+  box-shadow:0 3px 12px rgba(0,0,0,0.35);
+  background:#2a1000;
+}
+.guru-opening-photo.sidharayya{object-position:78% 42%;}
+.guru-opening-photo.guruji{object-position:22% 42%;}
+.opening-gurus .om{
+  font-size:0;
+  flex:0 0 auto;
+}
+.opening-gurus .om::before{
+  content:"\0950";
+  font-size:2rem;
+}
 .app-header h1{font-size:1.35rem;color:#FFD700;font-weight:700;letter-spacing:0.5px;margin:4px 0 2px;}
 .app-header p{font-size:0.72rem;color:#FFCC88;letter-spacing:1px;text-transform:uppercase;}
 .app-header .opening-provider{
@@ -284,7 +311,7 @@ body{
 
 .slot-header{
   display:grid;
-  grid-template-columns:108px 1fr;
+  grid-template-columns:100px minmax(170px,1fr) repeat(5,86px);
   gap:0;
   padding:5px 8px;
   background:rgba(255,215,0,0.1);
@@ -295,16 +322,19 @@ body{
   font-weight:700;
   text-transform:uppercase;
   letter-spacing:0.5px;
+  min-width:700px;
 }
 .slot{
   display:grid;
-  grid-template-columns:108px 1fr;
+  grid-template-columns:100px minmax(170px,1fr) repeat(5,86px);
   align-items:center;
   padding:8px 8px;
   border-radius:8px;
   margin-bottom:3px;
   border-left:3px solid transparent;
   background:rgba(255,255,255,0.03);
+  min-width:700px;
+  column-gap:0;
 }
 .slot > div{min-width:0;}
 .slot.now{
@@ -315,6 +345,48 @@ body{
 }
 .slot .time{font-size:0.72rem;color:#FFAA66;line-height:1.3;}
 .slot .result{font-size:0.88rem;font-weight:600;line-height:1.3;}
+.slot-table-scroll{
+  overflow-x:auto;
+  padding-bottom:2px;
+}
+.slot-flag{
+  justify-self:center;
+  width:76px;
+  min-height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,215,0,0.16);
+  border-radius:6px;
+  color:rgba(255,255,255,0.34);
+  font-size:0.66rem;
+  font-weight:700;
+}
+.slot-flag.active{
+  color:#1a0800;
+  background:#FFD78A;
+  border-color:#FFD700;
+}
+.slot-flag.good{
+  background:#8BEA9A;
+  border-color:#9DFF8A;
+}
+.slot-flag.bad{
+  background:#FFB06E;
+  border-color:#FFCC88;
+}
+.slot-legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 10px;
+  margin-top:9px;
+  color:#FFCC88;
+  font-size:0.68rem;
+  line-height:1.35;
+}
+.slot-legend span{
+  white-space:nowrap;
+}
 .slot .result .english-result{
   display:block;
   margin-top:2px;
@@ -362,6 +434,46 @@ body{
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:8px;
 }
+.balam-tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
+}
+.balam-tab{
+  flex:1;
+  border:1px solid rgba(255,215,0,0.3);
+  background:rgba(255,255,255,0.05);
+  color:#FFD78A;
+  border-radius:8px;
+  padding:9px 8px;
+  font-size:0.78rem;
+  font-weight:700;
+  cursor:pointer;
+}
+.balam-tab.active{
+  background:#FFD78A;
+  color:#1a0800;
+}
+.balam-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:0.74rem;
+}
+.balam-table th,
+.balam-table td{
+  border-bottom:1px solid rgba(255,215,0,0.14);
+  padding:8px 6px;
+  text-align:left;
+  vertical-align:top;
+}
+.balam-table th{
+  color:#FFD700;
+  text-transform:uppercase;
+  font-size:0.62rem;
+  letter-spacing:0.5px;
+}
+.balam-status-good{color:#9DFF8A;font-weight:700;}
+.balam-status-bad{color:#FFB06E;font-weight:700;}
 .timeline-btn{
   background:rgba(255,255,255,0.05);
   border:1px solid rgba(255,215,0,0.28);
@@ -540,6 +652,11 @@ footer a{color:rgba(255,215,0,0.4);text-decoration:none;}
 
 <header class="app-header">
   <span class="om">ॐ</span>
+  <div class="opening-gurus">
+    <img class="guru-opening-photo sidharayya" src="./assets/header-gurus.jpg" alt="Sidharayya">
+    <span class="om">à¥</span>
+    <img class="guru-opening-photo guruji" src="./assets/header-gurus.jpg" alt="Guruji">
+  </div>
   <h1>Bhargava Panchangam</h1>
   <p>Sukra Ghadiyalu &bull; Daily Predictions</p>
   <div class="opening-provider">Provider: P S N Kumar, Gurusthan, Peddamangalaram, Hyderabad</div>
@@ -615,14 +732,26 @@ footer a{color:rgba(255,215,0,0.4);text-decoration:none;}
       </div>
     </div>
 
+    <div class="card" id="balamCard" style="display:none;">
+      <div class="card-title">Chandrabala / Tarabala</div>
+      <div class="balam-tabs">
+        <button class="balam-tab active" id="chandraBalaTab" type="button" onclick="showBalamTab('chandra')">Chandrabala</button>
+        <button class="balam-tab" id="taraBalaTab" type="button" onclick="showBalamTab('tara')">Tarabala</button>
+      </div>
+      <div id="balamBody"></div>
+    </div>
+
     <!-- Bhargav Schedule -->
     <div class="card">
       <div class="card-title">🌅 Bhargava Ghadiyalu — Day</div>
       <p style="font-size:0.72rem;color:#FFCC88;margin-bottom:10px;">
         Predictions adjusted to local sunrise &bull; 1 Ghadiya = 24 min (adjusted)
       </p>
-      <div class="slot-header"><span>Time</span><span>Bhargava Result</span></div>
-      <div id="daySlots"></div>
+      <div class="slot-table-scroll">
+        <div class="slot-header"><span>Time</span><span>Bhargava Result</span><span>☊ Rahukala</span><span>Yamaganda</span><span>Amrita</span><span>Dur</span><span>Gulika</span></div>
+        <div id="daySlots"></div>
+      </div>
+      <div class="slot-legend"><span>☊ = Rahukala</span><span>YG = Yamaganda</span><span>AG = Amrita Kalam</span><span>DM = Durmuhurtam</span><span>GK = Gulika</span></div>
     </div>
 
     <div class="card">
@@ -630,8 +759,11 @@ footer a{color:rgba(255,215,0,0.4);text-decoration:none;}
       <p style="font-size:0.72rem;color:#FFCC88;margin-bottom:10px;">
         Same table applies from Sunset to next Sunrise
       </p>
-      <div class="slot-header"><span>Time</span><span>Bhargava Result</span></div>
-      <div id="nightSlots"></div>
+      <div class="slot-table-scroll">
+        <div class="slot-header"><span>Time</span><span>Bhargava Result</span><span>☊ Rahukala</span><span>Yamaganda</span><span>Amrita</span><span>Dur</span><span>Gulika</span></div>
+        <div id="nightSlots"></div>
+      </div>
+      <div class="slot-legend"><span>☊ = Rahukala</span><span>YG = Yamaganda</span><span>AG = Amrita Kalam</span><span>DM = Durmuhurtam</span><span>GK = Gulika</span></div>
     </div>
 
     <p class="disclaimer">
@@ -2164,6 +2296,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   registerServiceWorker();
 });
 </script>
-<script src="./engine-client.js?v=20260421lang2"></script>
+<script src="./engine-client.js?v=20260423balam2"></script>
 </body>
 </html>

@@ -209,8 +209,24 @@ RASI_NAMES = [
     "Meena",
 ]
 
+RASI_NAKSHATRA_PADAS = {
+    1: [("Ashwini", "1-4"), ("Bharani", "1-4"), ("Krittika", "1")],
+    2: [("Krittika", "2-4"), ("Rohini", "1-4"), ("Mrigashira", "1-2")],
+    3: [("Mrigashira", "3-4"), ("Ardra", "1-4"), ("Punarvasu", "1-3")],
+    4: [("Punarvasu", "4"), ("Pushya", "1-4"), ("Ashlesha", "1-4")],
+    5: [("Magha", "1-4"), ("Purva Phalguni", "1-4"), ("Uttara Phalguni", "1")],
+    6: [("Uttara Phalguni", "2-4"), ("Hasta", "1-4"), ("Chitta", "1-2")],
+    7: [("Chitta", "3-4"), ("Swati", "1-4"), ("Vishakha", "1-3")],
+    8: [("Vishakha", "4"), ("Anuradha", "1-4"), ("Jyeshta", "1-4")],
+    9: [("Moola", "1-4"), ("Purva Ashadha", "1-4"), ("Uttara Ashadha", "1")],
+    10: [("Uttara Ashadha", "2-4"), ("Shravana", "1-4"), ("Dhanishta", "1-2")],
+    11: [("Dhanishta", "3-4"), ("Shatabhisha", "1-4"), ("Purva Bhadrapada", "1-3")],
+    12: [("Purva Bhadrapada", "4"), ("Uttara Bhadrapada", "1-4"), ("Revati", "1-4")],
+}
+
 RAHU_SEGMENT = [8, 2, 7, 5, 6, 4, 3]
 YAMAGANDA_SEGMENT = [5, 4, 3, 2, 1, 7, 6]
+GULIKA_SEGMENT = [7, 6, 5, 4, 3, 2, 1]
 DAY_LORDS = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"]
 HORA_SEQUENCE = ["Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon"]
 
@@ -433,6 +449,127 @@ def _anandadi_context(date_str: str, local_hours: float, latitude: float, longit
     }
 
 
+def _rasi_pada_text(rasi_number: int) -> str:
+    return ", ".join(f"{name} Pada {pada}" for name, pada in RASI_NAKSHATRA_PADAS[rasi_number])
+
+
+def _chandrabala_status_rows(transit_rasi: int) -> list[dict]:
+    good_positions = {1, 3, 6, 7, 10, 11}
+    pooja_positions = {2, 5, 9}
+    rows = []
+    for birth_rasi in range(1, 13):
+        position = ((transit_rasi - birth_rasi) % 12) + 1
+        if position in good_positions:
+            status = "Good"
+            guidance = "Good Chandrabala"
+        elif position in pooja_positions:
+            status = "Puja Needed"
+            guidance = "Proceed with caution; puja/remedy advised"
+        else:
+            status = "Bad"
+            guidance = "Avoid major work if possible"
+        rows.append({
+            "rasi_number": birth_rasi,
+            "rasi_name": RASI_NAMES[birth_rasi],
+            "moon_position_from_birth": position,
+            "status": status,
+            "guidance": guidance,
+            "padas": _rasi_pada_text(birth_rasi),
+        })
+    return rows
+
+
+def _chandrabala_segments(
+    date_str: str,
+    start_utc: float,
+    end_utc: float,
+    local_midnight_utc_jd: float,
+) -> list[dict]:
+    segments = []
+    current_start = start_utc
+    while current_start < end_utc - 1e-8:
+        transit_rasi = _moon_rasi_index(current_start + 1e-8)
+        next_transition = _find_next_transition(current_start, _moon_rasi_index, max_days=2.0)
+        if next_transition is None or next_transition > end_utc:
+            next_transition = end_utc
+        ashtama_rasi = ((transit_rasi - 8) % 12) + 1
+        rows = _chandrabala_status_rows(transit_rasi)
+        segments.append({
+            "display": f"{_event_display_from_utc(current_start, local_midnight_utc_jd, date_str)} - {_event_display_from_utc(next_transition, local_midnight_utc_jd, date_str)}",
+            "transit_moon_rasi": {"number": transit_rasi, "name": RASI_NAMES[transit_rasi]},
+            "good_rasis": [
+                {"number": row["rasi_number"], "name": row["rasi_name"]}
+                for row in rows if row["status"] == "Good"
+            ],
+            "ashtama_chandra": {
+                "rasi_number": ashtama_rasi,
+                "rasi_name": RASI_NAMES[ashtama_rasi],
+                "padas": _rasi_pada_text(ashtama_rasi),
+            },
+            "rows": rows,
+        })
+        current_start = next_transition
+    return segments
+
+
+def _balam_tables(
+    date_str: str,
+    local_hours: float,
+    latitude: float,
+    longitude: float,
+    tz_hours: float,
+    sunrise_utc_jd: float,
+    next_sunrise_utc_jd: float,
+    local_midnight_utc_jd: float,
+) -> dict:
+    jdrik, _jconst, jd, place = _pyjhora_context(date_str, local_hours, latitude, longitude, tz_hours)
+    tara_groups = jdrik.thaaraabalam(jd, place, return_only_good_stars=False)
+    tara_names = [
+        ("Paramitra", "Good"),
+        ("Janma", "Not Good"),
+        ("Sampatha", "Very Good"),
+        ("Vipatha", "Bad"),
+        ("Kshema", "Good"),
+        ("Pratyaka", "Not Good"),
+        ("Sadhana", "Very Good"),
+        ("Naidhana", "Totally Bad"),
+        ("Mitra", "Good"),
+    ]
+    tara_rows = []
+    for index, stars in enumerate(tara_groups):
+        name, result = tara_names[index]
+        tara_rows.append({
+            "name": name,
+            "result": result,
+            "stars": [
+                {"number": star, "name": NAKSHATRA_NAMES[star] if star < len(NAKSHATRA_NAMES) else str(star)}
+                for star in stars
+            ],
+        })
+
+    jhora_chandra_rasis = sorted(set(jdrik.chandrabalam(jd, place)))
+    chandra_segments = _chandrabala_segments(date_str, sunrise_utc_jd, next_sunrise_utc_jd, local_midnight_utc_jd)
+    chandra_rasis = sorted({
+        item["number"]
+        for segment in chandra_segments
+        for item in segment["good_rasis"]
+    })
+    return {
+        "tarabala": tara_rows,
+        "chandrabala": [
+            {"number": rasi + 1, "name": RASI_NAMES[rasi + 1] if 0 <= rasi < 12 else str(rasi)}
+            for rasi in jhora_chandra_rasis
+            if 0 <= rasi < 12
+        ],
+        "chandrabala_segments": chandra_segments,
+        "chandrabala_all_good": [
+            {"number": rasi, "name": RASI_NAMES[rasi]}
+            for rasi in chandra_rasis
+            if 1 <= rasi <= 12
+        ],
+    }
+
+
 def _collect_local_timeline(
     start_hours: float,
     end_hours: float,
@@ -555,6 +692,10 @@ def _nakshatra_index(jd_utc: float) -> int:
 def _yoga_index(jd_utc: float) -> int:
     total = (_nirayana_moon_longitude(jd_utc) + _nirayana_solar_longitude(jd_utc)) % 360.0
     return max(1, int(math.ceil(total * 27.0 / 360.0)))
+
+
+def _moon_rasi_index(jd_utc: float) -> int:
+    return int(_nirayana_moon_longitude(jd_utc) // 30.0) + 1
 
 
 def _find_next_transition(
@@ -808,6 +949,7 @@ def calculate_panchanga(
 
     rahu_start, rahu_end = _day_segment_range(sunrise_hours, sunset_hours, RAHU_SEGMENT[weekday])
     yama_start, yama_end = _day_segment_range(sunrise_hours, sunset_hours, YAMAGANDA_SEGMENT[weekday])
+    gulika_start, gulika_end = _day_segment_range(sunrise_hours, sunset_hours, GULIKA_SEGMENT[weekday])
 
     nak_segments = _nakshatra_segments_for_day(local_midnight_utc_jd)
     amrita_events = []
@@ -827,6 +969,17 @@ def calculate_panchanga(
     yoga_end_display = _format_event_time(_hms_to_hours(yoga_data[1]), date_str)
     karana_end_display = _event_display_from_utc(karana_end_utc, local_midnight_utc_jd, date_str) if karana_end_utc else "--"
     current_lagna = _lagna_context(date_str, reference_hours, latitude, longitude, tz_hours)
+    next_sunrise_utc_jd = next_sunrise_jd_local - tz_hours / 24.0
+    balam_tables = _balam_tables(
+        date_str,
+        sunrise_hours,
+        latitude,
+        longitude,
+        tz_hours,
+        sunrise_utc_jd,
+        next_sunrise_utc_jd,
+        local_midnight_utc_jd,
+    )
     hora_timeline = _hora_timeline(previous_sunset_hours, sunrise_hours, sunset_hours, next_sunrise_hours, weekday)
     lagna_timeline = _merge_short_timeline_segments(_collect_local_timeline(
         0.0,
@@ -877,11 +1030,32 @@ def calculate_panchanga(
         "hora": hora,
         "lagna": current_lagna,
         "anandadi_yoga": None,
-        "rahu_kalam": {"display": f"{_format_event_time(rahu_start, date_str)} - {_format_event_time(rahu_end, date_str)}"},
-        "yamagandam": {"display": f"{_format_event_time(yama_start, date_str)} - {_format_event_time(yama_end, date_str)}"},
-        "durmuhurtam": [{"display": f"{_format_event_time(start, date_str)} - {_format_event_time(end, date_str)}"} for start, end in _durmuhurta_ranges(sunrise_hours, sunset_hours, weekday)],
+        "rahu_kalam": {
+            "start_hours": rahu_start,
+            "end_hours": rahu_end,
+            "display": f"{_format_event_time(rahu_start, date_str)} - {_format_event_time(rahu_end, date_str)}",
+        },
+        "yamagandam": {
+            "start_hours": yama_start,
+            "end_hours": yama_end,
+            "display": f"{_format_event_time(yama_start, date_str)} - {_format_event_time(yama_end, date_str)}",
+        },
+        "gulika": {
+            "start_hours": gulika_start,
+            "end_hours": gulika_end,
+            "display": f"{_format_event_time(gulika_start, date_str)} - {_format_event_time(gulika_end, date_str)}",
+        },
+        "durmuhurtam": [
+            {
+                "start_hours": start,
+                "end_hours": end,
+                "display": f"{_format_event_time(start, date_str)} - {_format_event_time(end, date_str)}",
+            }
+            for start, end in _durmuhurta_ranges(sunrise_hours, sunset_hours, weekday)
+        ],
         "amrita_gadiyalu": amrita_events,
         "varjyam": varjyam_events,
+        "balam": balam_tables,
         "timelines": {
             "hora": hora_timeline,
             "lagna": lagna_timeline,

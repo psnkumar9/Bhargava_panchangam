@@ -1,13 +1,14 @@
-const CACHE_NAME='bhargava-panchangam-v10';
+const CACHE_NAME='bhargava-panchangam-v14';
 const APP_SHELL=[
   './',
   './index.html',
-  './engine-client.js?v=20260421lang2',
+  './engine-client.js?v=20260423balam2',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-icon-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/apple-touch-icon.png',
+  './assets/header-gurus.jpg'
 ];
 
 self.addEventListener('install',event=>{
