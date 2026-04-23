@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "pydeps"))
+sys.path.insert(0, str(ROOT / "vendor"))
 sys.path.insert(0, str(ROOT / "drik-panchanga"))
 
 import swisseph as swe  # type: ignore
@@ -362,6 +363,7 @@ def _event_display_from_utc(jd_utc: float, local_midnight_utc_jd: float, date_st
 def _load_pyjhora_modules():
     candidate_paths = [
         ROOT / "pydeps",
+        ROOT / "vendor",
         ROOT.parent / "pydeps",
         Path(r"E:\AstroEngine\pydeps"),
     ]
