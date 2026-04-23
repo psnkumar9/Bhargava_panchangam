@@ -303,7 +303,16 @@ function showBalamTab(kind){
 async function calculate(){
   clearErr();
   document.getElementById('results').style.display='none';
+  localStorage.setItem(DISPLAY_LANG_STORAGE_KEY, getDisplayLang());
+  const calculateBtn = document.getElementById('calculateBtn');
+  const originalButtonText = calculateBtn?.textContent || '🔮 Show Panchangam';
+  if(calculateBtn){
+    calculateBtn.disabled = true;
+    calculateBtn.setAttribute('data-loading', 'true');
+    calculateBtn.textContent = 'Calculating...';
+  }
 
+  try {
   const raw = document.getElementById('dateInput').value;
   const parsedDate = parseDisplayDate(raw);
   if(!parsedDate){
@@ -354,17 +363,12 @@ async function calculate(){
   const dateIso = `${year}-${pad2(month)}-${pad2(day)}`;
 
   let payload;
-  try {
     const url = `/api/panchanga?date=${encodeURIComponent(dateIso)}&time=${encodeURIComponent(timeValue || '00:00')}&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&tz=${encodeURIComponent(tz)}&timezone=${encodeURIComponent('Asia/Kolkata')}`;
     const response = await fetch(url, {cache: 'no-store'});
     payload = await response.json();
     if(!response.ok){
       throw new Error(payload.error || 'Calculation failed');
     }
-  } catch (error) {
-    showErr(`Calculation engine error: ${error.message}`);
-    return;
-  }
 
   const now = new Date();
   const isToday = now.getFullYear() === year && (now.getMonth() + 1) === month && now.getDate() === day;
@@ -375,7 +379,7 @@ async function calculate(){
   const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const pak = payload.tithi.paksha === 'Shukla' ? 'Shukla Paksha ☀️' : 'Krishna Paksha 🌙';
   const teluguTithi = TITHI_TEL[payload.tithi.number - 1] || '--';
-  const durmuhurtaHtml = withValidationNote(payload.durmuhurtam.length ? payload.durmuhurtam.map(item => item.display).join('<br>') : 'None');
+  const durmuhurtaHtml = withValidationNote((payload.durmuhurtam || []).length ? payload.durmuhurtam.map(item => item.display).join('<br>') : 'None');
   const amritaHtml = withValidationNote(formatEngineEventList(payload.amrita_gadiyalu));
   const varjyamHtml = withValidationNote(formatEngineEventList(payload.varjyam));
   latestTimelinePayload = payload;
@@ -506,4 +510,13 @@ async function calculate(){
   setTimeout(() => {
     document.getElementById('results').scrollIntoView({behavior: 'smooth', block: 'start'});
   }, 80);
+  } catch (error) {
+    showErr(`Calculation error: ${error.message}`);
+  } finally {
+    if(calculateBtn){
+      calculateBtn.disabled = false;
+      calculateBtn.removeAttribute('data-loading');
+      calculateBtn.textContent = originalButtonText;
+    }
+  }
 }

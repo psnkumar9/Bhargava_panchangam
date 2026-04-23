@@ -194,6 +194,12 @@ body{
   margin-bottom:9px;
   box-shadow:0 4px 15px rgba(255,167,0,0.25);
 }
+.btn-primary:focus-visible,
+.btn-primary[data-loading="true"]{
+  outline:2px solid rgba(255,215,0,0.95);
+  outline-offset:2px;
+  box-shadow:0 0 0 3px rgba(255,215,0,0.22),0 4px 18px rgba(255,167,0,0.32);
+}
 .btn-gps{
   background:rgba(255,255,255,0.06);
   border:1px solid rgba(255,215,0,0.4);
@@ -709,8 +715,8 @@ footer a{color:rgba(255,215,0,0.4);text-decoration:none;}
     <button class="btn btn-save-location" id="saveGpsBtn" onclick="saveCurrentGPSLocation()" disabled>➕ Add GPS To Saved Places</button>
     <button class="btn btn-install" id="installBtn" onclick="installApp()">⬇ Install On Home Screen</button>
 
-    <button class="btn btn-primary" onclick="calculate()">🔮 Show Panchangam</button>
-    <button class="btn btn-gps" onclick="getGPS()">📡 Use My GPS Location</button>
+    <button class="btn btn-primary" id="calculateBtn" type="button" onclick="calculate()">🔮 Show Panchangam</button>
+    <button class="btn btn-gps" type="button" onclick="getGPS()">📡 Use My GPS Location</button>
     <div id="gpsStatus"></div>
     <div class="error-msg" id="errorMsg"></div>
   </div>
@@ -1204,6 +1210,7 @@ function initDisplayLanguage(){
   const lang = SUPPORTED_DISPLAY_LANGS.has(saved) ? saved : "en";
   const input = document.querySelector(`input[name="displayLang"][value="${lang}"]`);
   if(input) input.checked = true;
+  localStorage.setItem(DISPLAY_LANG_STORAGE_KEY, lang);
   document.querySelectorAll('input[name="displayLang"]').forEach(item => {
     item.addEventListener("change", () => {
       localStorage.setItem(DISPLAY_LANG_STORAGE_KEY, getDisplayLang());
@@ -1336,7 +1343,7 @@ function persistSavedLocations(){
 function registerServiceWorker(){
   if(!('serviceWorker' in navigator)) return;
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js?v=20260420f').catch(()=>{});
+    navigator.serviceWorker.register('./sw.js?v=20260423fix1').catch(()=>{});
   });
 }
 function setupInstallPrompt(){
@@ -2296,6 +2303,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   registerServiceWorker();
 });
 </script>
-<script src="./engine-client.js?v=20260423balam2"></script>
+<script src="./engine-client.js?v=20260423fix1"></script>
 </body>
 </html>
